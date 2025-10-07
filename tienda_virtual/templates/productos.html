@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<style>
+    .product-card {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.08);
+        padding: 26px 26px 18px 26px;
+        margin-bottom: 36px;
+        transition: transform 0.18s, box-shadow 0.18s;
+        min-height: 340px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 2px solid #e5e5fa;
+    }
+    .product-card:hover {
+        transform: translateY(-6px) scale(1.025);
+        box-shadow: 0 8px 32px rgba(0,0,30,0.16), 0 4px 12px rgba(0,0,0,0.13);
+        border-color: #2a44a8;
+    }
+    .product-title {
+        font-size: 1.32rem; 
+        color: #00008B; 
+        margin-bottom: 10px; 
+        font-weight: bold; 
+        letter-spacing: 0.5px; 
+    }
+    .product-code { 
+        color: #4a4a4a; 
+        font-size: 0.99rem; 
+        margin-bottom: 7px; 
+    }
+    .product-description { 
+        color: #222; 
+        font-size: 1.06rem; 
+        margin-bottom: 15px; 
+        line-height: 1.4; 
+    }
+    .product-state { 
+        font-size: 1.02rem; 
+        margin-bottom: 7px; 
+        color: #173b7a; 
+        font-weight: 500; }
+    .provider-title { 
+        font-size: 1.01rem; 
+        font-weight: 600; 
+        margin-bottom: 2px; 
+        color: #00008B; }
+    ul.providers-list { 
+        margin-left: 0; 
+        padding-left: 18px; 
+        margin-bottom: 0; }
+    .no-provider { 
+        color: #B22222; 
+        font-style: italic; 
+    }
+    @media (max-width: 900px) { 
+        .col-md-6 { 
+            flex: 0 0 100%; 
+            max-width: 100%; 
+        } 
+    }
+    .search-bar { 
+        display: flex; 
+        align-items: center; 
+        justify-content: left; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+    .search-icon { 
+        font-size: 1.6rem; 
+        margin-right: 7px; 
+    }
+    .search-input {
+      width: 445px; 
+      padding: 10px 16px; 
+      font-size: 1.1rem;
+      border: 2px solid #00008B; 
+      border-radius: 8px; 
+      outline: none;
+      transition: box-shadow 0.3s;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    }
+    .search-input:focus { border-color:#2468db; box-shadow: 0 2px 12px rgba(36, 104, 219, 0.15); }
+</style>
+
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4" style="font-size:2rem; color:#142879;">📖Catálogo de Productos</h2>
+    <div class="row d-flex flex-wrap">
+        <form method="GET" action="{{ url_for('productos_bp.productos') }}" class="search-bar mb-3">
+            <span class="search-icon">🔍</span>
+            <input type="text" name="filtro" id="buscador" class="search-input" placeholder="🤔Buscar producto por nombre, código, proveedor..." value="{{ filtro|default('') }}">
+            <button type="submit" style="display:none"></button>
+        </form>
+        {% for item in productos %}
+        <div class="col-md-6 col-lg-4 d-flex">
+            <div class="product-card w-100">
+                <div>
+                    <div class="product-title">{{ item.producto.nombre }}</div>
+                    <div class="product-code"><b>Código:</b> {{ item.producto.codigo }}</div>
+                    <div class="product-description"><b>Descripción:</b> {{ item.producto.descripcion }}</div>
+                    <div class="product-state"><b>Estado:</b> 
+                        {% if item.producto.id_estado_producto %}
+                            {{ item.producto.estado_producto.estado }}
+                        {% else %}
+                            <span style="color: #aaa;">No definido</span>
+                        {% endif %}
+                    </div>
+                    <div><b>Proveedor:</b> {{ item.proveedor.nombre }}</div>
+                    <div><b>Disponible:</b> {{ item.stock_disponible }}</div>
+                    <div><b>En carrito:</b> {{ item.en_carrito }}</div>
+                    <div><b>Precio:</b> ${{ "{:,.0f}".format(item.precio) }}</div>
+                </div>
+                <form method="POST" action="{{ url_for('carrito_compras_bp.agregar_al_carrito', id_producto=item.producto.id_producto, id_proveedor=item.proveedor.id_proveedor) }}">
+                    <button type="submit" class="btn btn-outline-success"
+                            {% if item.stock_disponible <= 0 %}disabled{% endif %}>
+                        🛒 Agregar al carrito
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Carrito de compras{% endblock %}
+{% block content %}
+
+<style>
+    .total-bordered {
+    border: 3px solid blue;
+    border-radius: 8px;
+    padding: 9px 22px;
+    font-size: 1.4rem;
+    color: black;
+    background: white;
+    margin-right: 18px;
+    font-family: 'Times New Roman', Times, serif;
+    display: inline-block;
+}
+
+.table-bordered {
+    border-radius: 10px ;
+    box-shadow: 0 6px 22px rgba(0,0,80,0.08);
+    border: 2px solid blue;
+}
+
+</style>
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4" style="font-size:2rem; color:#142879;">🛒Carrito de Compras</h2>
+    {% if productos %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>🔩Producto</th>
+                    <th>🤵🏼Proveedor</th>
+                    <th>#️⃣Cantidad</th>
+                    <th>🪙Precio Unitario</th>
+                    <th>💹IVA (%)</th>
+                    <th>💸IVA Valor</th>
+                    <th>💶Subtotal</th>
+                    <th>👆🏼Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in productos %}
+                <tr>
+                    <td>{{ item.producto.nombre }}</td>  <!--busqueda de los datos y el formato para mostrarlos-->
+                    <td>{{ item.proveedor.id_proveedor }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>${{ "{:,.0f}".format(item.precio) }}</td>
+                    <td>{{ item.iva }}%</td>
+                    <td>${{ "{:,.0f}".format(item.iva_valor) }}</td>
+                    <td>${{ "{:,.0f}".format(item.subtotal) }}</td>
+                    <td>
+                        <form action="{{ url_for('carrito_compras_bp.restar_unidad_carrito', key=item.key) }}" method="post" style="display:inline;">
+                            <button class="btn btn-outline-warning" type="submit" title="Eliminar una unidad">−</button>
+                        </form>
+                        <a href="{{ url_for('carrito_compras_bp.eliminar_del_carrito', key=item.key) }}" 
+                        class="btn btn-outline-danger"
+                        onclick="return confirm('¿Estas seguro de que deseas eliminar todas las unidades de este producto del carrito?')">
+                        ✂️Eliminar
+                        </a> <!--llamado de funciones para la acción del boton-->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+                <span class="total-bordered">
+                    <strong>
+                        💶Subtotal: ${{ "{:,.0f}".format(total_sin_iva) }}<br>
+                        💹IVA (19%): ${{ "{:,.0f}".format(total_iva) }}<br>
+                        💰Total: ${{ "{:,.0f}".format(total) }}
+                    </strong>
+                </span>
+                <a href="{{ url_for('compras_bp.compra') }}" class="btn btn-outline-success">🛍️Comprar</a>
+            </div>
+            <div>
+                <a href="{{ url_for('productos_bp.productos') }}" class="btn btn-outline-primary">↩️Volver al catálogo</a>
+                <a href="{{ url_for('carrito_compras_bp.vaciar_carrito') }}" class="btn btn-warning ms-2"
+                   onclick="return confirm('¿Seguro que quieres vaciar el carrito?')">🗑️Vaciar carrito</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">📭Tu carrito está vacío.</div>
+        <div class="text-center">
+            <a href="{{ url_for('productos_bp.productos') }}" class="btn btn-outline-primary">↩️Volver al catálogo</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

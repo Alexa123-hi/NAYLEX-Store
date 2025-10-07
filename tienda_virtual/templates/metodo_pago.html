@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Pago{% endblock %}
+{% block content %}
+<style>
+    .metodo-pago-card {
+        margin-top: -150px;
+        margin-bottom: -10px;
+        background: #fff;
+        border: 3px solid #2045c7;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(32, 69, 199, 0.10);
+        padding: 20px 30px 24px 30px;
+        max-width: 480px;
+        width: 100%;
+    }
+    .metodo-pago-title {
+        color: #2045c7;
+        text-align: center;
+        font-weight: bold;
+        font-size: 2rem;
+        margin-bottom: 5px;
+        margin-top: -5px;
+        font-family: 'Times New Roman', Times, serif;
+    }
+</style>
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="metodo-pago-card">
+        <div class="metodo-pago-title">👆🏼Selecciona el método de pago</div>
+        {% if mensaje_exito %}
+            <div class="alert alert-success text-center" id="mensaje-pago">
+                {{ mensaje_exito }}
+            </div>
+            <script>
+                setTimeout(function() {
+                    window.location.href = "{{ url_for('productos_bp.productos') }}";
+                }, 3000);
+            </script>
+        {% else %}
+        <form method="POST" action="{{ url_for('compras_bp.pago') }}">
+            <div class="mb-3">
+                <label for="metodo" class="form-label">📠Método de pago:</label>
+                <select class="form-select" id="metodo" name="metodo" required onchange="mostrarCamposPago()">
+                    <option value="">👉🏼Seleccione un método</option>
+                    {% for metodo in metodos_pago %}
+                        <option value="{{ metodo.id_metodo }}">{{ metodo.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Campos de tarjeta -->
+            <div id="datos-tarjeta" style="display:none;">
+                <div class="mb-3">
+                    <label for="numero_tarjeta" class="form-label">💳Número de tarjeta:</label>
+                    <input type="text" class="form-control" id="numero_tarjeta" name="numero_tarjeta" maxlength="16">
+                </div>
+                <div class="mb-3">
+                    <label for="nombre_tarjeta" class="form-label">🦲Nombre en la tarjeta:</label>
+                    <input type="text" class="form-control" id="nombre_tarjeta" name="nombre_tarjeta">
+                </div>
+                <div class="mb-3">
+                    <label for="expira" class="form-label">🗓️Fecha de expiración:</label>
+                    <input type="text" class="form-control" id="expira" name="expira" 
+                    placeholder="MM/AA" pattern="^(0[1-9]|1[0-2])\/\d{2}$" required>
+                    <small class="form-text text-muted">Formato: MM/AA. Ejemplo: 07/26</small>
+
+                </div>
+                <div class="mb-3">
+                    <label for="cvv" class="form-label">🏷️CVV:</label>
+                    <input type="text" class="form-control" id="cvv" name="cvv" maxlength="4">
+                </div>
+            </div>
+
+            <!-- Campos de PSE -->
+            <div id="datos-pse" style="display:none;">
+                <div class="mb-3">
+                    <label for="banco" class="form-label">🏦Banco:</label>
+                    <input type="text" class="form-control" id="banco" name="banco">
+                </div>
+                <div class="mb-3">
+                    <label for="titular_pse" class="form-label">👨🏼‍🎓Titular:</label>
+                    <input type="text" class="form-control" id="titular_pse" name="titular_pse">
+                </div>
+                <div class="mb-3">
+                    <label for="documento_pse" class="form-label">🪪Documento:</label>
+                    <input type="text" class="form-control" id="documento_pse" name="documento_pse">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                <button type="submit" class="btn btn-success w-75">👍🏼Confirmar y pagar</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+<script>
+    // validación segun selección(se muestran los campos)
+    function mostrarCamposPago() {
+        var select = document.getElementById('metodo'); //selección segun el metodo
+        var tarjeta = document.getElementById('datos-tarjeta'); //llama los html segun la elección
+        var pse = document.getElementById('datos-pse');
+        var selectedText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : ""; //obtiene el texto (metodo)
+
+        tarjeta.style.display = 'none'; //para no mostrar los html
+        pse.style.display = 'none';
+
+        document.querySelectorAll('#datos-tarjeta input, #datos-pse input').forEach(function(inp){inp.required = false});
+
+        if (selectedText.trim() === 'Tarjeta de Crédito') {
+            tarjeta.style.display = 'block';
+            document.querySelectorAll('#datos-tarjeta input').forEach(function(inp){inp.required = true});
+        } else if (selectedText.trim() === 'PSE' || selectedText.trim() === 'Transferencia PSE') {
+            pse.style.display = 'block';
+            document.querySelectorAll('#datos-pse input').forEach(function(inp){inp.required = true});
+        }//muestra el template segun el metodo seleccionado por el usuario
+    }
+    document.addEventListener('DOMContentLoaded', function() {//
+        mostrarCamposPago();
+    });
+</script>
+{% endblock %}

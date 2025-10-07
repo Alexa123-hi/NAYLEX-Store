@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Detalle del Pedido{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📋Detalles del Pedido #{{ pedido.id_pedido }}</h2>
+    <div class="mb-4">
+        {% if pedido.id_estado_pedido == 1 %}
+            <form action="{{ url_for('compras_bp.pedido_recibido', id_pedido=pedido.id_pedido) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-success me-2">📬Recibido</button>
+            </form>
+            <form action="{{ url_for('compras_bp.pedido_cancelar', id_pedido=pedido.id_pedido) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger">❌Cancelar</button>
+            </form>
+        {% endif %}
+    </div>
+
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-primary">
+        <tr>
+            <th>🔩Producto</th>
+            <th>🤵🏼Proveedor</th>
+            <th>#️⃣Cantidad</th>
+            <th>🪙Precio Unitario</th>
+            <th>💹IVA (%)</th>
+            <th>💸IVA Valor</th>
+            <th>💶Subtotal</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in productos %}
+        <tr>
+            <td>{{ item.producto.nombre }}</td>
+            <td>{{ item.proveedor }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>${{ "{:,.0f}".format(item.precio_unitario) }}</td>
+            <td>{{ item.iva_porcentaje }}%</td>
+            <td>${{ "{:,.0f}".format(item.iva_valor) }}</td>
+            <td>${{ "{:,.0f}".format(item.subtotal) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="6" class="text-end"><strong>💶Subtotal:</strong></td>
+            <td><strong>${{ "{:,.0f}".format(subtotal_general) }}</strong></td>
+        </tr>
+        <tr>
+            <td colspan="6" class="text-end"><strong>💸IVA Total:</strong></td>
+            <td><strong>${{ "{:,.0f}".format(iva_total) }}</strong></td>
+        </tr>
+        <tr>
+            <td colspan="6" class="text-end"><strong>💰TOTAL:</strong></td>
+            <td><strong>${{ "{:,.0f}".format(total_general) }}</strong></td>
+        </tr>
+        </tfoot>
+    </table>
+    <a href="{{ url_for('compras_bp.mis_pedidos') }}" class="btn btn-secondary">↩️Volver</a>
+</div>
+{% endblock %}

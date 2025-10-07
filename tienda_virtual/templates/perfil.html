@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<style>
+  .perfil-form-container {
+    /* background: linear-gradient(145deg, #0000CD, #00008B); */
+    padding: 0px 30px 28px 30px;
+    border-radius: 15px;
+    text-align: center;
+    width:500px;
+    margin-left: 400px;
+    margin-top: -22px;
+    color: white;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.10);
+    border: 10px double blue;
+    
+  }
+  .perfil-form-title {
+    font-size: 2.1em;
+    color: blue;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+    margin-top: -20px;
+  }
+  .perfil-form-sub {
+    font-size: 1em;
+    margin-bottom: 5px;
+    margin-top: -12px;
+    color: blue;
+    letter-spacing: 0.2px;
+  }
+  .input-group-perfil {
+    background: #4a91fe;
+    display: flex;
+    align-items: center;
+    padding: 2px 3px;
+    border-radius: 10px;
+    border: 3px solid black;
+    width: 95%;
+    margin: 6px auto 0 auto;
+  }
+  .input-group-perfil span {
+    font-size: 1.23em;
+    margin-right: 10px;
+    color: #ed3e9a;
+    display: flex;
+    align-items: center;
+  }
+  .input-group-perfil input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 5px;
+    font-family: 'Times New Roman', Times, serif;
+    border: 3px solid black;
+    padding: 5px 10px;
+    margin: 0;
+    background: white;
+    color: #333;
+  }
+  .input-group-perfil input:focus {
+    background: #eef5ff;
+  }
+  
+  .perfil-avatar {
+    font-size: 40px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+  }
+  .btn-separado {
+   margin-top: 10px;
+  }
+</style>
+
+<div class="perfil-form-container">
+
+    <div class="perfil-avatar">👤</div>
+    <div class="perfil-form-title">Mi Perfil</div>
+    <div class="perfil-form-sub">Actualiza tus datos personales</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message|safe }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('perfil_bp.perfil') }}">
+      <div class="input-group-perfil">
+        <span>🪪</span>
+        <input type="text" name="cc" id="cc" value="{{ datos.cc }}" placeholder="Cédula" required>
+      </div>
+      <div class="input-group-perfil">
+        <span>👦</span>
+        <input type="text" name="nombre" id="nombre" value="{{ datos.nombre }}" placeholder="Nombre" required>
+      </div>
+      <div class="input-group-perfil">
+        <span>👧</span>
+        <input type="text" name="apellido" id="apellido" value="{{ datos.apellido }}" placeholder="Apellido" required>
+      </div>
+      <div class="input-group-perfil">
+        <span>📧</span>
+        <input type="email" name="correo" id="correo" value="{{ datos.correo }}" placeholder="Correo electrónico" required>
+      </div>
+      <div class="input-group-perfil">
+        <span>📱</span>
+        <input type="text" name="telefono" id="telefono" value="{{ datos.telefono }}" placeholder="Teléfono" required>
+      </div>
+      <div class="input-group-perfil">
+        <span>🏠</span>
+        <input type="text" name="direccion" id="direccion" value="{{ datos.direccion }}" placeholder="Dirección" required>
+      </div>
+      <button type="submit" class="btn btn-outline-success btn-separado">🔄 Actualizar datos</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('perfil_bp.inactivar_cuenta') }}" >
+      <button type="submit" class="btn btn-outline-danger btn-separado">❌ Inactivar cuenta</button>
+    </form>
+</div>
+{% endblock %}

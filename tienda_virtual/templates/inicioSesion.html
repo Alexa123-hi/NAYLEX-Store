@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NAYLEX Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 70px;
+            height: 75vh;
+            background: linear-gradient(90deg, white, #4a91fe);
+
+        }
+
+        .sidebar {
+            padding: 50px 30px;
+            background: linear-gradient(145deg, #0000CD, #00008B);
+            color: white;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-radius: 15px;
+            border: 10px double white;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            margin-bottom: 20px;
+            
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 35px;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin-top: -20px;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+/* mensajes alerta */
+        .alert {
+            font-size: 20px;
+            color: yellow;
+            background-color: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+/* seccion del bloque para ingresar usuario y contraseña */
+        .input-group { 
+            /* background: white; */ 
+            background: #4a91fe;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            width: 90%;
+            border: 3px solid black;
+        }
+/* figuras de candado y muñeco */
+        .input-group span {
+            font-size: 20px;
+            margin-right: 10px;
+            color: #00008B;
+            
+        }
+/* ingreso de datos  */
+        .input-group input {
+            border: none;
+            outline: none;
+            width: 82%;
+            font-size: 18px;
+            border-radius: 5px;
+            font-family: 'Times New Roman', Times, serif;
+            border: 3px solid black;
+            
+        }
+/* boton de ingreso */
+        .btn-login {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 20px;
+            font-size: 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 80%;
+            transition: background 0.3s;
+            font-family: 'Times New Roman', Times, serif;
+            border: 4px double black;
+            margin-top: 20px;
+        }
+
+        .btn-login:hover {
+            background-color: #45a049;
+        }
+
+        .sub-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 99%;
+            background-color: #00008B;
+            color: white;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* font-size: 14px; */
+            font-size: clamp(5px, 1.5vw, 14px);
+            border: 8px double white;
+            
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="header">
+        <h1>Inicio de Sesión</h1>
+        <h2>NAYLEX Store</h2>
+    </div>
+
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div id="mensaje-flash" class="alert">
+              {% for message in messages %}
+                {{ message }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        
+        <form action="{{ url_for('inicioSesion') }}" method="POST" > <!-- evitar usuarios pregrabados autocomplete="off"-->
+            <div class="input-group">
+                <span>👥</span>
+                <input type="text" id="nombreUsuario" name="nombreUsuario" placeholder="Usuario" required>
+            </div>
+
+            <div class="input-group">
+                <span>🔐</span>
+                <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">🌅Iniciar Sesión🌅</button>
+          </div>
+
+        </form>
+
+        <div style="margin-top: 7px;">
+          <form action="{{ url_for('registro_usuario') }}" method="GET">
+              <button type="submit" class="btn-login" style="background-color: #2196F3; margin-top: 0; width: 120%;">
+                  📲Registrarse📲
+              </button>
+          </form>
+       </div>
+       <div style="margin-top: 8px;">
+         <a href="{{ url_for('recuperar_contrasena') }}" style="color: #FFD700; font-size: 18px; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+       </div>
+
+        <div style="margin-top: 8px;">
+         <a href="{{ url_for('perfil_bp.reactivar_cuenta') }}" style="color: #FFD700; font-size: 18px; text-decoration: none;">
+           ¿Quieres reactivar tu cuenta?
+         </a>
+       </div>
+       
+    </div>
+</div>
+
+<div class="sub-bar">
+    <h2>Querido usuario, esperamos que disfrute de la Tienda Virtual NAYLEX STORE</h2>
+</div>
+
+<!-- Script para ocultar el mensaje flash después de 3 segundos -->
+<script>
+    setTimeout(function() {
+        var mensaje = document.getElementById('mensaje-flash');
+        if (mensaje) {
+            mensaje.style.display = 'none';
+        }
+    }, 3000);
+</script>
+
+</body>
+</html>

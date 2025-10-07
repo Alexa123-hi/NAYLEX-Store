@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <!-- Define el tipo de documento y el idioma -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <title>Registro Usuario</title>
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
+        <style>
+            body {
+                margin: 0;
+                font-family: 'Times New Roman', Times, serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 70px;
+                height: 75vh;
+                background: linear-gradient(90deg, white, #4a91fe);
+                /* background: linear-gradient(90deg, #1e3c72, #2a5298); */
+            }
+
+            .sidebar {
+                padding: 25px 30px;
+                background: linear-gradient(145deg, #0000CD, #00008B);
+                color: white;
+                width: 380px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                border-radius: 15px;
+                border: 10px double white;
+                box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
+                padding: 10px;
+            }
+
+            .sub-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 99%;
+                background-color: #00008B;
+                color: white;
+                height: 30px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                /* font-size: 14px; */
+                font-size: clamp(5px, 1.5vw, 14px);
+                border: 8px double white;
+                
+            }
+
+            h1 {
+                margin-bottom: 15px;
+                font-size: 25px;
+            }
+
+            h2 {
+                margin-bottom: 15px;
+                font-size: clamp(12px, 1.5vw, 20px);
+            }
+
+            form { 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1px;
+                width: 100%;
+            }
+
+            .input-group {
+                background: #4a91fe;
+                display: flex;
+                align-items: center;
+                padding: 1px;
+                border-radius: 10px;
+                border: 3px solid black;
+                width: 85%;
+                margin-top: 8px;
+            }
+
+            .input-group span {
+                font-size: 25px;
+                margin-right: 4px;
+                color: #00008B;
+                padding: -10px;
+            }
+
+            .input-group input {
+                border: none;
+                outline: none;
+                width: 80%;
+                font-size: 16px;
+                padding: 4px;
+                border-radius: 5px;
+                font-family: 'Times New Roman', Times, serif;
+                border: 2px solid black;
+            }
+
+            .btn-registrar {
+                background-color: #4CAF50;
+                border: 5px double black;
+                color: white;
+                padding: 6px;
+                font-size: 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                width: 65%;
+                transition: background 0.3s;
+                font-family: 'Times New Roman', Times, serif;
+                margin-top: 20px;
+            }
+
+            .btn-registrar:hover {
+                background-color: #45a049;
+            }
+
+            .alert {
+                font-size: 16.5px;
+                color: yellow;
+                background-color: rgba(0,0,0,0.3);
+                padding: 8px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="sidebar">
+            
+            <h1>Registro de Nuevo Usuario<br>NAYLEX Store</h1>
+
+            <div class="content">
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div id="mensaje-flash" class="alert">
+                      {% for message in messages %}
+                        {{ message }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+            </div>
+
+            <form action="{{ url_for('registro_usuario') }}" method="POST">
+
+                <div class="input-group">
+                    <span>🆔</span>
+                    <input type="text" name="cc" placeholder="Cédula" value="{{ datos_anteriores.get('cc', '') }}"required>
+                </div>
+
+                <div class="input-group">
+                    <span>👤</span>
+                    <input type="text" name="nombre" placeholder="Nombre" value="{{ datos_anteriores.get('nombre', '') }}"required>
+                </div>
+
+                <div class="input-group">
+                    <span>👤</span>
+                    <input type="text" name="apellido" placeholder="Apellido" value="{{ datos_anteriores.get('apellido', '') }}" required>
+                </div>
+
+                <div class="input-group">
+                    <span>📧</span>
+                    <input type="email" name="correo" placeholder="Correo Electrónico" value="{{ datos_anteriores.get('correo', '') }}" required>
+                </div>
+
+                <div class="input-group">
+                    <span>📞</span>
+                    <input type="text" name="telefono" placeholder="Teléfono" value="{{ datos_anteriores.get('telefono', '') }}"required>
+                </div>
+
+                <div class="input-group">
+                    <span>🏠</span>
+                    <input type="text" name="direccion" placeholder="Dirección" value="{{ datos_anteriores.get('direccion', '') }}"required>
+                </div>
+
+                <div class="input-group">
+                    <span>👥</span>
+                    <input type="text" name="username" placeholder="Nombre de usuario" value="{{ datos_anteriores.get('username', '') }}"required>
+                </div>
+
+                <div class="input-group">
+                    <span>🔒</span>
+                    <input type="password" name="password" placeholder="Contraseña" value="{{ datos_anteriores.get('password', '') }}"required>
+                </div>
+
+                <button type="submit" class="btn-registrar">Crear Cuenta</button>
+
+                <a href="{{ url_for('inicioSesion') }}" style="color: #FFD700; font-size: 18px; margin-top: 10px; text-decoration: none;">Volver al inicio de sesión</a>
+    
+                <div class="sub-bar">
+                    <h2>Nos complace saber que quiere ser parte de NAYLEX STORE</h2>
+                </div>
+            </form>
+        </div>
+        <script>
+            setTimeout(function() {
+                var mensaje = document.getElementById('mensaje-flash');
+                if (mensaje) {
+                    mensaje.style.display = 'none';
+                }
+            }, 3000);
+        </script>
+        
+    </body>
+    
+</html>

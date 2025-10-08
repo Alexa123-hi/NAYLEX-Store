@@ -24,13 +24,17 @@ app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
 
-# Conexión a la base de datos (Render o local)
-if 'DATABASE_URL' in os.environ:
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'
-
+#Conexión base de datos
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# # Conexión a la base de datos (Render o local)
+# if 'DATABASE_URL' in os.environ:
+#     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+# else:
+#     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'
+
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # #Conexion a la base de datos
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'

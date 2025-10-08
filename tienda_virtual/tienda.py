@@ -7,9 +7,9 @@ from flask_mail import Mail, Message
 from tienda_virtual.models import db, Persona, Usuario, Cliente, Producto # Importar los modelos necesarios
 from datetime import datetime
 from tienda_virtual.Carrito_compras import carrito_compras_bp
-from productos import productos_bp
-from Compras import compras_bp
-from perfil import perfil_bp
+from tienda_virtual.productos import productos_bp
+from tienda_virtual.Compras import compras_bp
+from tienda_virtual.perfil import perfil_bp
 import re
 import os
 

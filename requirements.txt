@@ -9,7 +9,7 @@ greenlet>=3.1.0,<3.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==3.0.2
-pillow==11.2.0
+pillow==11.1.0
 # Cambiado: psycopg2-binary → psycopg2 (driver nativo estable)
 psycopg2>=2.9.9
 reportlab==4.4.1

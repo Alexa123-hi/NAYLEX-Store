@@ -1,1 +1,0 @@
-web: gunicorn tienda_virtual.tienda:app

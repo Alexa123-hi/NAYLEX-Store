@@ -4,7 +4,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
-from models import db, Persona, Usuario, Cliente, Producto # Importar los modelos necesarios
+from tienda_virtual.models import db, Persona, Usuario, Cliente, Producto # Importar los modelos necesarios
 from datetime import datetime
 from Carrito_compras import carrito_compras_bp
 from productos import productos_bp

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
-from models import db, Persona, Usuario
+from tienda_virtual.models import db, Persona, Usuario
 
 
 perfil_bp = Blueprint('perfil_bp', __name__)

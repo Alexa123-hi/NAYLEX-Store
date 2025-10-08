@@ -1,5 +1,5 @@
 from flask import Blueprint, session, redirect, url_for, request, flash, render_template
-from models import db, Producto, Producto_Proveedor
+from tienda_virtual.models import db, Producto, Producto_Proveedor
 
 carrito_compras_bp = Blueprint('carrito_compras_bp', __name__) #conexion con el archivo principal
 

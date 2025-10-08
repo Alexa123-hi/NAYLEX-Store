@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file
-from models import db, Pedido, Detalle_Pedido, Direccion_Envio, Venta, Detalles_Venta, Producto_Proveedor, Estado_Pedido, Metodo_Pago, Producto, Proveedor
+from tienda_virtual.models import db, Pedido, Detalle_Pedido, Direccion_Envio, Venta, Detalles_Venta, Producto_Proveedor, Estado_Pedido, Metodo_Pago, Producto, Proveedor
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas

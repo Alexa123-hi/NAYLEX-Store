@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-from models import db, Producto, Proveedor, Producto_Proveedor
+from tienda_virtual.models import db, Producto, Proveedor, Producto_Proveedor
 
 productos_bp = Blueprint('productos_bp', __name__) #conexion con tienda.py
 

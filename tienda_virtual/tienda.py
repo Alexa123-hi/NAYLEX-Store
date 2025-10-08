@@ -11,6 +11,7 @@ from productos import productos_bp
 from Compras import compras_bp
 from perfil import perfil_bp
 import re
+import os
 
 
 app = Flask(__name__)
@@ -22,9 +23,18 @@ app.register_blueprint(carrito_compras_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
-#Conexion a la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'
+
+# Conexión a la base de datos (Render o local)
+if 'DATABASE_URL' in os.environ:
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# #Conexion a la base de datos
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Alexa_0511@localhost:5432/Aplicacion_Escritorio'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicialización 
 db.init_app(app) 

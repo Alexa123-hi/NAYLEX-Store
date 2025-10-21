@@ -450,7 +450,7 @@ def factura(id_pedido):
     c.setFont("Times-Roman", 13)
 
     # Información del pedido y del cliente
-    from models import Cliente, Persona, Proveedor, Producto, Producto_Proveedor
+    from tienda_virtual.models import Cliente, Persona, Proveedor, Producto, Producto_Proveedor
     cliente = Cliente.query.filter_by(id_cliente=pedido.id_cliente).first()
     nombre_cliente = "-"
     cedula_cliente = "-"

@@ -7,6 +7,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import mm
 import time
 import io
+import os
 
 compras_bp = Blueprint('compras_bp', __name__)
 

@@ -43,7 +43,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Inicialización 
 db.init_app(app) 
 
-@app.route('/iniciar_Sesion', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def inicioSesion():
     if request.method == 'POST':
         username = request.form['nombreUsuario']

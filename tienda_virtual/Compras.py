@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file, current_app
 from tienda_virtual.models import db, Pedido, Detalle_Pedido, Direccion_Envio, Venta, Detalles_Venta, Producto_Proveedor, Estado_Pedido, Metodo_Pago, Producto, Proveedor
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
@@ -437,12 +437,12 @@ def factura(id_pedido):
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    #Logo
-    logo_path = "static/imagenes/ICONO.png"
+    #logo
+    logo_path = os.path.join(current_app.root_path, 'static', 'imagenes', 'ICONO.png')
     try:
-        c.drawImage(logo_path, 40, height-140, width=110, height=110, mask='auto')
-    except Exception:
-        pass
+        c.drawImage(logo_path, 40, height - 140, width=110, height=110, mask='auto')
+    except Exception as e:
+        print(f"⚠️ No se pudo cargar el logo: {e}")
 
     #Titulo
     c.setFont("Times-Bold", 24)

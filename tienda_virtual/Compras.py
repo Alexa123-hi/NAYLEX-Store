@@ -424,143 +424,195 @@ def pedido_cancelar(id_pedido):
     return redirect(url_for('compras_bp.detalle_pedido', id_pedido=id_pedido))
 
 
-
 #-------------------------------------------------Factura De Pago----------------------------------------------
 @compras_bp.route('/factura/<int:id_pedido>')
 def factura(id_pedido):
+    from tienda_virtual.models import Pedido, Detalle_Pedido, Cliente, Persona, Proveedor, Producto, Producto_Proveedor, Metodo_Pago
+    import io, os
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from reportlab.lib import colors
+    from flask import current_app, send_file, flash, redirect, url_for
+
+    # ==========================================================
+    # 🧠 SINGLETON: Configuración global del PDF
+    # ==========================================================
+    class ConfiguracionFactura:
+        _instancia = None
+        def _new_(cls):
+            if cls._instancia is None:
+                cls.instancia = super().new_(cls)
+                cls._instancia.logo_path = os.path.join(current_app.root_path, 'static', 'imagenes', 'ICONO.png')
+                cls._instancia.font_titulo = "Times-Bold"
+                cls._instancia.font_texto = "Times-Roman"
+                cls._instancia.iva_porcentaje = 19
+                cls._instancia.contacto = "naylexstore@gmail.com"
+            return cls._instancia
+
+    # ==========================================================
+    # 💡 STRATEGY: Cálculo de IVA (permite cambiar fácilmente)
+    # ==========================================================
+    class IVAStrategy:
+        def calcular(self, subtotal: float) -> float:
+            raise NotImplementedError
+
+    class IVA19(IVAStrategy):
+        def calcular(self, subtotal: float) -> float:
+            return subtotal * 0.19
+
+    class IVA0(IVAStrategy):
+        def calcular(self, subtotal: float) -> float:
+            return 0.0
+
+    # ==========================================================
+    # 🧱 BUILDER: Construcción paso a paso de la factura PDF
+    # ==========================================================
+    class FacturaBuilder:
+        def _init_(self, pedido, detalles):
+            self.pedido = pedido
+            self.detalles = detalles
+            self.config = ConfiguracionFactura()
+            self.buffer = io.BytesIO()
+            self.canvas = canvas.Canvas(self.buffer, pagesize=letter)
+            self.width, self.height = letter
+            self.y = self.height - 170
+            self.subtotal_general = 0
+            self.iva_total = 0
+            self.iva_strategy = IVA19()  # estrategia por defecto
+
+        def agregar_encabezado(self):
+            try:
+                self.canvas.drawImage(self.config.logo_path, 40, self.height - 140, width=110, height=110, mask='auto')
+            except Exception as e:
+                print(f"⚠ No se pudo cargar el logo: {e}")
+
+            self.canvas.setFont(self.config.font_titulo, 24)
+            self.canvas.drawString(170, self.height - 80, "Factura de compra - Naylex Store")
+            self.canvas.setFont(self.config.font_texto, 13)
+
+            # Información del cliente
+            cliente = Cliente.query.filter_by(id_cliente=self.pedido.id_cliente).first()
+            nombre_cliente, cedula_cliente = "-", "-"
+            if cliente:
+                persona = Persona.query.filter_by(id_persona=cliente.id_persona).first()
+                if persona:
+                    nombre_cliente = f"{persona.nombre} {persona.apellido}"
+                    cedula_cliente = persona.cc
+
+            inicio = 40
+            self.canvas.drawString(inicio, self.y, f"Pedido N°: {self.pedido.id_pedido}")
+            self.y -= 18
+            self.canvas.drawString(inicio, self.y, f"Fecha: {self.pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') if self.pedido.fecha_pedido else '-'}")
+            self.y -= 18
+            self.canvas.drawString(inicio, self.y, f"Cliente: {nombre_cliente}")
+            self.y -= 18
+            self.canvas.drawString(inicio, self.y, f"Cédula: {cedula_cliente}")
+            self.y -= 28
+            return self
+
+        def agregar_tabla_productos(self):
+            fin_linea = 585
+            self.canvas.setFont("Times-Bold", 12)
+            encabezado = ["Producto", "Proveedor", "Cant.", "P. Unit", "IVA (%)", "IVA Valor", "Subtotal"]
+            x_list = [40, 150, 230, 305, 385, 455, 535]
+            for i, titulo in enumerate(encabezado):
+                self.canvas.drawString(x_list[i], self.y, titulo)
+            self.canvas.line(38, self.y - 2, fin_linea, self.y - 2)
+
+            self.canvas.setFont("Times-Roman", 12)
+            self.y -= 18
+
+            for detalle in self.detalles:
+                producto = Producto.query.get(detalle.id_producto)
+                proveedor = Proveedor.query.get(detalle.id_proveedor)
+                prod_nombre = (producto.nombre[:16] + '...') if producto and len(producto.nombre) > 16 else (producto.nombre if producto else "-")
+                prov_nombre = (proveedor.nombre[:15] + '...') if proveedor and len(proveedor.nombre) > 15 else (proveedor.nombre if proveedor else "-")
+
+                cantidad = detalle.cantidad
+                prod_prov = Producto_Proveedor.query.filter_by(id_producto=producto.id_producto, id_proveedor=detalle.id_proveedor).first()
+                precio_unit = float(prod_prov.precio) if prod_prov else 0
+                subtotal = precio_unit * cantidad
+
+                iva_valor = self.iva_strategy.calcular(subtotal)
+
+                fila = [
+                    prod_nombre,
+                    prov_nombre,
+                    str(cantidad),
+                    "${:,.0f}".format(precio_unit),
+                    f"{self.config.iva_porcentaje}%",
+                    "${:,.0f}".format(iva_valor),
+                    "${:,.0f}".format(subtotal),
+                ]
+
+                for i, dato in enumerate(fila):
+                    self.canvas.drawString(x_list[i], self.y, dato)
+                self.y -= 18
+
+                self.subtotal_general += subtotal
+                self.iva_total += iva_valor
+
+                if self.y < 90:
+                    self.canvas.showPage()
+                    self.canvas.setFont("Times-Roman", 12)
+                    self.y = self.height - 60
+
+            self.canvas.line(38, self.y + 10, fin_linea, self.y + 10)
+            return self
+
+        def agregar_totales(self):
+            self.canvas.setFont("Times-Bold", 12)
+            inicio_titulo, inicio_totales = 520, 525
+            self.y -= 10
+            self.canvas.drawRightString(inicio_titulo, self.y, "Subtotal:")
+            self.canvas.drawString(inicio_totales, self.y, "${:,.0f}".format(self.subtotal_general))
+            self.y -= 18
+            self.canvas.drawRightString(inicio_titulo, self.y, "IVA Total:")
+            self.canvas.drawString(inicio_totales, self.y, "${:,.0f}".format(self.iva_total))
+            self.y -= 18
+
+            metodo = Metodo_Pago.query.get(self.pedido.id_metodo)
+            es_contraentrega = metodo and metodo.nombre.lower() in ['contraentrega', 'contra entrega', 'contra-entrega']
+
+            total_label = "TOTAL A PAGAR:" if es_contraentrega else "TOTAL:"
+            self.canvas.drawRightString(inicio_titulo, self.y, total_label)
+            self.canvas.setFont("Times-Bold", 14)
+            self.canvas.drawString(inicio_totales, self.y, "${:,.0f}".format(self.subtotal_general + self.iva_total))
+            return self
+
+        def agregar_pie_pagina(self):
+            self.canvas.setFont("Times-Roman", 10)
+            self.canvas.setFillColor(colors.darkblue)
+            self.canvas.drawString(40, 35, f"Contacto Naylex Store: {self.config.contacto}")
+            self.canvas.setFillColor(colors.black)
+            return self
+
+        def construir(self):
+            self.canvas.showPage()
+            self.canvas.save()
+            self.buffer.seek(0)
+            return self.buffer
+
+    # ==========================================================
+    # 🧩 CONTROLADOR PRINCIPAL (usa el Builder)
+    # ==========================================================
     pedido = Pedido.query.get(id_pedido)
     if not pedido or not (1 <= pedido.id_estado_pedido <= 4):
         flash("Factura no disponible para este pedido.", "warning")
         return redirect(url_for('compras_bp.pedidos'))
 
     detalles = Detalle_Pedido.query.filter_by(id_pedido=id_pedido).all()
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
 
-    #logo
-    logo_path = os.path.join(current_app.root_path, 'static', 'imagenes', 'ICONO.png')
-    try:
-        c.drawImage(logo_path, 40, height - 140, width=110, height=110, mask='auto')
-    except Exception as e:
-        print(f"⚠️ No se pudo cargar el logo: {e}")
+    builder = FacturaBuilder(pedido, detalles)
+    pdf_buffer = (
+        builder
+        .agregar_encabezado()
+        .agregar_tabla_productos()
+        .agregar_totales()
+        .agregar_pie_pagina()
+        .construir()
+    )
 
-    #Titulo
-    c.setFont("Times-Bold", 24)
-    c.drawString(170, height-80, "Factura de compra - Naylex Store")
-    c.setFont("Times-Roman", 13)
-
-    # Información del pedido y del cliente
-    from tienda_virtual.models import Cliente, Persona, Proveedor, Producto, Producto_Proveedor
-    cliente = Cliente.query.filter_by(id_cliente=pedido.id_cliente).first()
-    nombre_cliente = "-"
-    cedula_cliente = "-"
-    if cliente:
-        persona = Persona.query.filter_by(id_persona=cliente.id_persona).first()
-        if persona:
-            nombre_cliente = f"{persona.nombre} {persona.apellido}"
-            cedula_cliente = persona.cc
-
-    inicio_datos = 40
-    y = height-170
-    c.drawString(inicio_datos, y, f"Pedido N°: {pedido.id_pedido}")
-    y -= 18
-    c.drawString(inicio_datos, y, f"Fecha: {pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') if pedido.fecha_pedido else '-'}")
-    y -= 18
-    c.drawString(inicio_datos, y, f"Cliente: {nombre_cliente}")
-    y -= 18
-    c.drawString(inicio_datos, y, f"Cédula: {cedula_cliente}")
-    y -= 28
-
-    # Encabezado de la tabla
-    fin_linea = 585
-    c.setFont("Times-Bold", 12)
-    encabezado = ["Producto", "Proveedor", "Cantidad", "Precio Unitario", "IVA (%)", "IVA Valor", "Subtotal"]
-    x_list = [40, 150, 230, 305, 385, 455, 535]
-    for i, titulo in enumerate(encabezado):
-        c.drawString(x_list[i], y, titulo)
-    c.line(38, y-2, fin_linea, y-2)  # Línea bajo encabezado
-
-    # Detalles de la tabla
-    c.setFont("Times-Roman", 12)
-    y -= 18
-    subtotal_general = 0
-    iva_total = 0
-    iva_porcentaje = 19
-
-    for detalle in detalles:
-        producto = Producto.query.get(detalle.id_producto)
-        proveedor_id = detalle.id_proveedor
-        proveedor_obj = Proveedor.query.get(proveedor_id)
-        
-        producto_nombre = (producto.nombre[:16] + '...') if producto and len(producto.nombre) > 16 else (producto.nombre if producto else "-")
-        proveedor_nombre = (proveedor_obj.nombre[:15] + '...') if proveedor_obj and len(proveedor_obj.nombre) > 15 else (proveedor_obj.nombre if proveedor_obj else "-")
-
-        cantidad = detalle.cantidad
-        prod_prov = Producto_Proveedor.query.filter_by(id_producto=producto.id_producto, id_proveedor=proveedor_id).first()
-        precio_unitario = float(prod_prov.precio) if prod_prov else 0
-        subtotal = precio_unitario * cantidad
-        iva_valor = subtotal * iva_porcentaje / 100
-
-        fila = [
-            producto_nombre,
-            proveedor_nombre,
-            str(cantidad),
-            "${:,.0f}".format(precio_unitario),
-            f"{iva_porcentaje}%",
-            "${:,.0f}".format(iva_valor),
-            "${:,.0f}".format(subtotal),
-        ]
-        for i, dato in enumerate(fila):
-            c.drawString(x_list[i], y, dato)
-        y -= 18
-
-        subtotal_general += subtotal
-        iva_total += iva_valor
-
-        if y < 90:  # salto de página si se acaba el espacio
-            c.showPage()
-            c.setFont("Times-Roman", 12)
-            y = height - 60
-
-    # Linea de abajo de la tabla
-    c.line(38, y+10, fin_linea, y+10)
-
-    # Pie de pagina
-    c.setFont("Times-Roman", 10)
-    c.setFillColor(colors.darkblue)
-    c.drawString(40, 35, "Contacto Naylex Store: naylexstore@gmail.com")
-    c.setFillColor(colors.black)  # restaurar color para otras operaciones si hay más
-
-    # Totales
-    inicio_titulo = 520
-    inicio_totales = 525
-    c.setFont("Times-Bold", 12)
-    y -= 10
-    c.drawRightString(inicio_titulo, y, "Subtotal:")
-    c.drawString(inicio_totales, y, "${:,.0f}".format(subtotal_general))
-    y -= 18
-    c.drawRightString(inicio_titulo, y, "IVA Total:")
-    c.drawString(inicio_totales, y, "${:,.0f}".format(iva_total))
-    y -= 18
-
-    # Segun metodo de pago cambia el escrito del total
-    metodo = Metodo_Pago.query.get(pedido.id_metodo)
-    es_contraentrega = False
-    if metodo and metodo.nombre.lower() in ['contraentrega', 'contra entrega', 'contra-entrega']:
-        es_contraentrega = True
-
-    if es_contraentrega:
-        c.drawRightString(inicio_titulo, y, "TOTAL A PAGAR:")
-    else:
-        c.drawRightString(inicio_titulo, y, "TOTAL:")
-
-    c.setFont("Times-Bold", 14)
-    c.drawString(inicio_totales, y, "${:,.0f}".format(subtotal_general + iva_total))
-
-    c.showPage()
-    c.save()
-    buffer.seek(0)
-    return send_file(buffer, as_attachment=True,
-        download_name=f"Factura_Pedido_{pedido.id_pedido}.pdf",
-        mimetype='application/pdf') #descarga del pdf
+    return send_file(pdf_buffer, as_attachment=True,
+                     download_name=f"Factura_Pedido_{pedido.id_pedido}.pdf",
+                     mimetype='application/pdf')

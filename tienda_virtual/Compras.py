@@ -439,9 +439,10 @@ def factura(id_pedido):
     # ==========================================================
     class ConfiguracionFactura:
         _instancia = None
-        def _new_(cls):
+
+        def __new__(cls):
             if cls._instancia is None:
-                cls.instancia = super().new_(cls)
+                cls._instancia = super().__new__(cls)
                 cls._instancia.logo_path = os.path.join(current_app.root_path, 'static', 'imagenes', 'ICONO.png')
                 cls._instancia.font_titulo = "Times-Bold"
                 cls._instancia.font_texto = "Times-Roman"
@@ -468,7 +469,7 @@ def factura(id_pedido):
     # 🧱 BUILDER: Construcción paso a paso de la factura PDF
     # ==========================================================
     class FacturaBuilder:
-        def _init_(self, pedido, detalles):
+        def __init__(self, pedido, detalles):
             self.pedido = pedido
             self.detalles = detalles
             self.config = ConfiguracionFactura()
@@ -484,7 +485,7 @@ def factura(id_pedido):
             try:
                 self.canvas.drawImage(self.config.logo_path, 40, self.height - 140, width=110, height=110, mask='auto')
             except Exception as e:
-                print(f"⚠ No se pudo cargar el logo: {e}")
+                print(f"⚠️ No se pudo cargar el logo: {e}")
 
             self.canvas.setFont(self.config.font_titulo, 24)
             self.canvas.drawString(170, self.height - 80, "Factura de compra - Naylex Store")

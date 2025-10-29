@@ -1,5 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from tienda_virtual.pedido_states import (PendienteState, ProcesadoState, EnviadoState, EntregadoState, CanceladoState )
 
 db = SQLAlchemy()
 
@@ -55,12 +58,26 @@ class Pedido(db.Model):
     id_metodo = db.Column(db.Integer)
     fecha_pedido = db.Column(db.DateTime)
     id_estado_pedido = db.Column(db.Integer, db.ForeignKey('estado_pedido.id_estado_pedido'))
-    estado_pedido = db.relationship("Estado_Pedido", backref="pedidos") #conexion entre tablas de 1...*
+    estado_pedido = db.relationship("Estado_Pedido", backref="pedidos")  # conexión entre tablas de 1...*
+
+    #VÍNCULO con el patrón State
+    @property
+    def estado(self):
+        mapping = {
+            'Pendiente': PendienteState(),
+            'Procesado': ProcesadoState(),
+            'Enviado': EnviadoState(),
+            'Entregado': EntregadoState(),
+            'Cancelado': CanceladoState(),
+        }
+        return mapping.get(self.estado_pedido.estado, PendienteState())
+
 
 class Estado_Pedido(db.Model):
     __tablename__ = 'estado_pedido'
     id_estado_pedido = db.Column(db.Integer, primary_key=True)
     estado = db.Column(db.String(16))
+
 
 class Persona(db.Model):
     __tablename__ = 'persona' 

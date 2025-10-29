@@ -435,7 +435,7 @@ def factura(id_pedido):
     from flask import current_app, send_file, flash, redirect, url_for
 
     # ==========================================================
-    # 🧠 SINGLETON: Configuración global del PDF
+    # SINGLETON: Configuración total del PDF (reutilizable) - una sola configuración para facturas
     # ==========================================================
     class ConfiguracionFactura:
         _instancia = None
@@ -451,7 +451,7 @@ def factura(id_pedido):
             return cls._instancia
 
     # ==========================================================
-    # 💡 STRATEGY: Cálculo de IVA (permite cambiar fácilmente)
+    # STRATEGY: Cálculo de IVA (se puede cambiar) - Intercambiar forma de calcular iva , agregar nuevas clases con nuevos ivas
     # ==========================================================
     class IVAStrategy:
         def calcular(self, subtotal: float) -> float:
@@ -466,7 +466,7 @@ def factura(id_pedido):
             return 0.0
 
     # ==========================================================
-    # 🧱 BUILDER: Construcción paso a paso de la factura PDF
+    # BUILDER: Construcción paso a paso de la factura PDF - Logica de construcción del PDF/controlador de Flask
     # ==========================================================
     class FacturaBuilder:
         def __init__(self, pedido, detalles):
@@ -595,7 +595,7 @@ def factura(id_pedido):
             return self.buffer
 
     # ==========================================================
-    # 🧩 CONTROLADOR PRINCIPAL (usa el Builder)
+    # CONTROLADOR PRINCIPAL (usa el Builder)
     # ==========================================================
     pedido = Pedido.query.get(id_pedido)
     if not pedido or not (1 <= pedido.id_estado_pedido <= 4):

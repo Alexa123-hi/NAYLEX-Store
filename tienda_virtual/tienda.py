@@ -10,6 +10,9 @@ from tienda_virtual.Carrito_compras import carrito_compras_bp
 from tienda_virtual.productos import productos_bp
 from tienda_virtual.Compras import compras_bp
 from tienda_virtual.perfil import perfil_bp
+from tienda_virtual.models import Persona, Usuario, Cliente, Producto
+from tienda_virtual.login_interpreter import (Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido)
+
 import re
 import os
 
@@ -36,8 +39,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicialización 
 db.init_app(app) 
-# Importar modelos (después de db.init_app)
-from tienda_virtual.models import Persona, Usuario, Cliente, Producto
 
 #conexión con los otros archivos.py
 app.register_blueprint(productos_bp)
@@ -46,43 +47,55 @@ app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
 
+# ------------------- RUTA: INICIO DE SESIÓN -------------------
 @app.route('/', methods=['GET', 'POST'])
 def inicioSesion():
     if request.method == 'POST':
         username = request.form['nombreUsuario']
         password = request.form['contrasena']
 
-        usuario = Usuario.query.filter_by(username=username, password=password).first()
+        # Buscar usuario en base de datos
+        usuario = Usuario.query.filter_by(username=username).first()
 
-        if usuario:
-            # Validar estado del usuario
-            if usuario.id_estado_usuario != 1:  # 1 = Activo 
-                flash("Su cuenta está inactiva. Debe activar nuevamente la cuenta para ingresar.")
-                return redirect(url_for('inicioSesion'))
+        # Crear contexto con usuario y contraseña ingresada
+        contexto = Contexto(usuario, password)
 
-            if usuario.id_tipo == 2:  # 2=cliente
-                session['usuario_id'] = usuario.id_usuario
-                session['usuario_nombre'] = usuario.username
-                # Buscar el cliente relacionado y guardar su id en sesión para usarlo en el registro de compras
-                cliente = Cliente.query.filter_by(id_usuario=usuario.id_usuario).first()
-                if cliente:
-                    session['id_cliente'] = cliente.id_cliente
-                flash(f'¡Bienvenido {usuario.username}!')
-                print("ID USUARIO: ", session.get('usuario_id'))
-                print("ID CLIENTE: ", session.get('id_cliente'))   #Para corroborar que se guarden los datos
-                return redirect(url_for('inicio'))
-            else:
-                tipo = {1: "Administrador", 3: "Vendedor"}.get(usuario.id_tipo, "Usuario") #Para que no acepte encargados de la tienda fisica ya que genera problemas con la aplicación de escritorio
-                flash(f"El usuario '{usuario.username}' está registrado como {tipo}.")
-                flash("Por favor, registrese como cliente para usar la tienda virtual.")
-                return redirect(url_for('inicioSesion'))
-        else:
-            flash('Usuario o contraseña incorrectos.')
-            flash('Intentelo Nuevamente.')
+        # Definir las reglas del login (Interpreter Pattern)
+        reglas_login = LoginValido(
+            UsuarioExiste(),
+            ContraseñaCorrecta(),
+            UsuarioActivo(),
+            EsCliente()
+        )
+
+        # Evaluar todas las reglas
+        if not reglas_login.interpretar(contexto):
+            if not UsuarioExiste().interpretar(contexto):
+                flash("El usuario no existe en el sistema.", "danger")
+            elif not ContraseñaCorrecta().interpretar(contexto):
+                flash("Contraseña incorrecta. Intente nuevamente.", "danger")
+            elif not UsuarioActivo().interpretar(contexto):
+                flash("Su cuenta está inactiva. Debe reactivarla para ingresar.", "warning")
+            elif not EsCliente().interpretar(contexto):
+                tipo = {1: "Administrador", 3: "Vendedor"}.get(usuario.id_tipo, "Usuario")
+                flash(f"El usuario '{usuario.username}' está registrado como {tipo}. Solo los clientes pueden ingresar.", "info")
             return redirect(url_for('inicioSesion'))
-        
-    return render_template('inicioSesion.html')
 
+        # Si pasa todas las validaciones
+        session['usuario_id'] = usuario.id_usuario
+        session['usuario_nombre'] = usuario.username
+
+        cliente = Cliente.query.filter_by(id_usuario=usuario.id_usuario).first()
+        if cliente:
+            session['id_cliente'] = cliente.id_cliente
+
+        flash(f'¡Bienvenido {usuario.username}!', "success")
+        print("ID USUARIO:", session.get('usuario_id'))
+        print("ID CLIENTE:", session.get('id_cliente'))
+
+        return redirect(url_for('inicio'))
+
+    return render_template('inicioSesion.html')
 
 
 @app.route('/inicio') #primer template al ingresar

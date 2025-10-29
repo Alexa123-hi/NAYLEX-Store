@@ -4,8 +4,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
-from tienda_virtual.models import db, Persona, Usuario, Cliente, Producto # Importar los modelos necesarios
 from datetime import datetime
+from tienda_virtual import db
 from tienda_virtual.Carrito_compras import carrito_compras_bp
 from tienda_virtual.productos import productos_bp
 from tienda_virtual.Compras import compras_bp
@@ -16,12 +16,6 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'clave_proyecto' 
-
-#conexión con los otros archivos.py
-app.register_blueprint(productos_bp)
-app.register_blueprint(carrito_compras_bp)
-app.register_blueprint(compras_bp)
-app.register_blueprint(perfil_bp)
 
 
 #Conexión base de datos
@@ -42,6 +36,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicialización 
 db.init_app(app) 
+# Importar modelos (después de db.init_app)
+from tienda_virtual.models import Persona, Usuario, Cliente, Producto
+
+#conexión con los otros archivos.py
+app.register_blueprint(productos_bp)
+app.register_blueprint(carrito_compras_bp)
+app.register_blueprint(compras_bp)
+app.register_blueprint(perfil_bp)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def inicioSesion():

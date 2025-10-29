@@ -3,8 +3,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from tienda_virtual.pedido_states import (PendienteState, ProcesadoState, EnviadoState, EntregadoState, CanceladoState )
+from tienda_virtual import db
 
-db = SQLAlchemy()
 
 class Cliente(db.Model): # modelos de la base de datos (replica de las tablas)
     __tablename__ = 'cliente'

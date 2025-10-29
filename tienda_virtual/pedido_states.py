@@ -1,5 +1,5 @@
 from flask import flash
-from tienda_virtual.models import db  # Importa db desde models.py
+from tienda_virtual import db  # Importa db desde models.py
 
 
 class EstadoBase:

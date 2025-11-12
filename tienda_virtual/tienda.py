@@ -3,11 +3,12 @@
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    flash, session, make_response, abort, g
+    flash, session, make_response, abort
 )
 from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
 from datetime import timedelta
+from werkzeug.security import generate_password_hash
 import os, secrets
 
 # ---------------------------- MÓDULOS PROPIOS ----------------------------
@@ -20,7 +21,7 @@ from tienda_virtual.models import Persona, Usuario, Cliente
 from tienda_virtual.login_interpreter import (
     Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido
 )
-from tienda_virtual.email_sender import enviar_correo  # 📩 integrado con Brevo
+from tienda_virtual.email_sender import enviar_correo  # 📩 Integración Brevo
 
 # -------------------------------------------------------------------------
 # CONFIGURACIÓN GENERAL
@@ -213,7 +214,6 @@ def recuperar_contrasena():
 
     return render_template("recuperar_contrasena.html", hide_navbar=True)
 
-
 @app.route("/restaurar_contrasena/<token>", methods=["GET", "POST"])
 def restaurar_contrasena(token):
     s = URLSafeTimedSerializer(app.secret_key)
@@ -233,13 +233,79 @@ def restaurar_contrasena(token):
         usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
 
         if usuario:
-            usuario.password = nueva_password  # ⚠️ en prod: usa hash
+            usuario.password = generate_password_hash(nueva_password)
             db.session.commit()
             flash("Tu contraseña fue actualizada exitosamente.", "success")
             return redirect(url_for("inicioSesion"))
         flash("No se pudo actualizar la contraseña.", "danger")
 
     return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
+
+# -------------------------------------------------------------------------
+# REGISTRO DE USUARIO (funcional)
+# -------------------------------------------------------------------------
+@app.route("/registro_usuario", methods=["GET", "POST"])
+def registro_usuario():
+    """Registra un nuevo usuario en el sistema."""
+    if request.method == "POST":
+        cc = request.form.get("cc", "").strip()
+        nombre = request.form.get("nombre", "").strip()
+        apellido = request.form.get("apellido", "").strip()
+        correo = request.form.get("correo", "").strip().lower()
+        telefono = request.form.get("telefono", "").strip()
+        direccion = request.form.get("direccion", "").strip()
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        # Validación básica
+        if not all([cc, nombre, apellido, correo, telefono, direccion, username, password]):
+            flash("⚠️ Todos los campos son obligatorios.", "warning")
+            return redirect(url_for("registro_usuario"))
+
+        # Validaciones de unicidad
+        if Persona.query.filter_by(cc=cc).first():
+            flash("⚠️ La cédula ya está registrada.", "warning")
+            return redirect(url_for("registro_usuario"))
+        if Persona.query.filter_by(correo=correo).first():
+            flash("⚠️ El correo ya está registrado.", "warning")
+            return redirect(url_for("registro_usuario"))
+        if Usuario.query.filter_by(username=username).first():
+            flash("⚠️ El nombre de usuario ya está en uso.", "warning")
+            return redirect(url_for("registro_usuario"))
+
+        try:
+            # Crear Persona
+            nueva_persona = Persona(
+                cc=cc,
+                nombre=nombre,
+                apellido=apellido,
+                correo=correo,
+                telefono=telefono,
+                direccion=direccion
+            )
+            db.session.add(nueva_persona)
+            db.session.commit()
+
+            # Crear Usuario
+            nuevo_usuario = Usuario(
+                username=username,
+                password=generate_password_hash(password),
+                id_persona=nueva_persona.id_persona,
+                id_estado_usuario=1
+            )
+            db.session.add(nuevo_usuario)
+            db.session.commit()
+
+            flash("✅ Usuario registrado exitosamente. Ahora puedes iniciar sesión.", "success")
+            return redirect(url_for("inicioSesion"))
+
+        except Exception as e:
+            db.session.rollback()
+            print("❌ Error al registrar usuario:", e)
+            flash("❌ Ocurrió un error al registrar el usuario.", "danger")
+
+    _get_csrf_token()
+    return render_template("registro_usuario.html", hide_navbar=True)
 
 # -------------------------------------------------------------------------
 @app.route("/cerrar_Sesion")

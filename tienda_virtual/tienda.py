@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
-# Aplicación Flask principal de NAYLEX Store (endurecida: CSRF, CSP con nonce, cookies seguras, HSTS)
-
-import os
-import re
-import secrets
-from datetime import datetime, timedelta
+# NAYLEX Store – Flask seguro (CSRF + CSP + Cookies + HSTS)
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    flash, session, make_response, abort
+    flash, session, make_response, abort, g
 )
-from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
-from flask_talisman import Talisman   # ← cabeceras seguras + CSP/nonce
+from flask_talisman import Talisman
+from itsdangerous import URLSafeTimedSerializer
+from datetime import datetime, timedelta
+import os, re, secrets
 
+# ---------------------------- MÓDULOS PROPIOS ----------------------------
 from tienda_virtual import db
 from tienda_virtual.Carrito_compras import carrito_compras_bp
 from tienda_virtual.productos import productos_bp
@@ -24,18 +22,19 @@ from tienda_virtual.login_interpreter import (
     Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido
 )
 
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # CONFIGURACIÓN BÁSICA DE LA APP
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
-
-# Secreto de la app (usa env en producción)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "cambia_esto_en_produccion")
 
-# ¿Estamos en producción real?
-IS_PROD = os.environ.get("RENDER", "0") == "1" or os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENV") == "production"
+IS_PROD = (
+    os.environ.get("RENDER", "0") == "1" or
+    os.environ.get("FLASK_ENV") == "production" or
+    os.environ.get("ENV") == "production"
+)
 
-# Base de datos
+# ---------------------------- BASE DE DATOS ----------------------------
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     os.environ.get("DATABASE_URL")
     or "postgresql+psycopg2://naylex_bd_iqap_user:19UWCPUfhiZHHyyLtLkxHEqVlhtldY1D"
@@ -43,47 +42,42 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# --------------------------------------------------------------------
-# COOKIES / SESIÓN (flags de seguridad)
-# --------------------------------------------------------------------
+# ---------------------------- SESIÓN Y COOKIES ----------------------------
 app.config.update(
-    SESSION_COOKIE_SECURE=True if IS_PROD else False,  # Secure solo con HTTPS real
-    SESSION_COOKIE_HTTPONLY=True,                      # ← corrige alerta HttpOnly
-    SESSION_COOKIE_SAMESITE="Lax",                     # 'Strict' si tu flujo lo permite
+    SESSION_COOKIE_SECURE=True if IS_PROD else False,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
     PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
 )
 
-# Inicializar DB y blueprints
+# ---------------------------- BLUEPRINTS ----------------------------
 db.init_app(app)
 app.register_blueprint(productos_bp)
 app.register_blueprint(carrito_compras_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
-# --------------------------------------------------------------------
-# CORREO
-# --------------------------------------------------------------------
+# ---------------------------- CORREO ----------------------------
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
 app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "naylexstore@gmail.com")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "uyywbugfcsfyeaas")  # mover a env en prod
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "uyywbugfcsfyeaas")  # mover a variable de entorno en prod
 app.config["MAIL_DEFAULT_SENDER"] = (
     os.environ.get("MAIL_DEFAULT_NAME", "NAYLEX Store"),
     os.environ.get("MAIL_DEFAULT_EMAIL", app.config["MAIL_USERNAME"]),
 )
 mail = Mail(app)
 
-# --------------------------------------------------------------------
-# CONTENT SECURITY POLICY (SIN 'unsafe-inline') + HSTS y cabeceras
-# Usamos flask-talisman para gestionar CSP y nonce.
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# CABECERAS DE SEGURIDAD Y CSP (TALISMAN)
+# -------------------------------------------------------------------------
 CSP = {
     "default-src": ["'self'"],
     "img-src": ["'self'", "data:"],
-    "script-src": ["'self'"],      # Talisman añadirá el nonce automáticamente
-    "style-src": ["'self'"],       # mueve estilos a /static/css
-    "font-src": ["'self'", "data:"],
+    "script-src": ["'self'", "https://cdn.jsdelivr.net"],
+    "style-src": ["'self'", "https://cdn.jsdelivr.net"],
+    "font-src": ["'self'", "https://cdn.jsdelivr.net", "data:"],
     "connect-src": ["'self'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
@@ -93,24 +87,23 @@ CSP = {
 talisman = Talisman(
     app,
     content_security_policy=CSP,
-    content_security_policy_nonce_in=["script-src"],  # habilita {{ csp_nonce() }} en templates
-    force_https=True if IS_PROD else False,           # en prod forzamos HTTPS
+    content_security_policy_nonce_in=["script-src"],  # habilita nonce automático
+    force_https=True if IS_PROD else False,
     strict_transport_security=True if IS_PROD else False,
     strict_transport_security_max_age=31536000,
     frame_options="DENY",
     referrer_policy="strict-origin-when-cross-origin",
-    x_content_type_options=True
+    x_content_type_options=True,
 )
 
-# Exponer csp_nonce() también como variable por si lo quieres inyectar manualmente
+# --- Exponer nonce de Talisman a los templates (corrige el error anterior) ---
 @app.context_processor
-def inject_csp_nonce():
-    from flask_talisman import Talisman as _T
-    return dict(csp_nonce=_T.get_nonce)
+def security_ctx():
+    def _csp_nonce():
+        return getattr(g, "csp_nonce", "")
+    return {"csp_nonce": _csp_nonce}
 
-# --------------------------------------------------------------------
-# CONTROL DE CACHÉ (no-store para vistas autenticadas)
-# --------------------------------------------------------------------
+# --- Desactivar caché para vistas autenticadas ---
 @app.after_request
 def no_cache_for_authenticated(resp):
     if "usuario_id" in session:
@@ -119,9 +112,9 @@ def no_cache_for_authenticated(resp):
         resp.headers.setdefault("Expires", "0")
     return resp
 
-# --------------------------------------------------------------------
-# CSRF LIGERO – token por sesión + validación en métodos mutadores
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# CSRF SIMPLE: TOKEN EN SESIÓN + VALIDACIÓN
+# -------------------------------------------------------------------------
 def _get_csrf_token():
     token = session.get("_csrf_token")
     if not token:
@@ -146,12 +139,11 @@ def _csrf_protect_hook():
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         _validate_csrf()
 
-# Exponer csrf_token() a Jinja
 app.jinja_env.globals["csrf_token"] = _get_csrf_token
 
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # RUTAS
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
     if request.method == "POST":
@@ -164,12 +156,7 @@ def inicioSesion():
 
         usuario = Usuario.query.filter_by(username=username).first()
         contexto = Contexto(usuario, password)
-        reglas_login = LoginValido(
-            UsuarioExiste(),
-            ContraseñaCorrecta(),
-            UsuarioActivo(),
-            EsCliente()
-        )
+        reglas_login = LoginValido(UsuarioExiste(), ContraseñaCorrecta(), UsuarioActivo(), EsCliente())
 
         if not reglas_login.interpretar(contexto):
             if not UsuarioExiste().interpretar(contexto):
@@ -180,15 +167,10 @@ def inicioSesion():
                 flash("Su cuenta está inactiva. Debe reactivarla para ingresar.", "warning")
             elif not EsCliente().interpretar(contexto):
                 tipo = {1: "Administrador", 3: "Vendedor"}.get(usuario.id_tipo, "Usuario")
-                flash(
-                    f"El usuario '{usuario.username}' está registrado como {tipo}. "
-                    "Solo los clientes pueden ingresar.",
-                    "info"
-                )
+                flash(f"El usuario '{usuario.username}' está registrado como {tipo}. Solo los clientes pueden ingresar.", "info")
             return redirect(url_for("inicioSesion"))
 
-        # Sesión
-        session.clear()              # rotamos ID para seguridad
+        session.clear()
         session.permanent = True
         session["usuario_id"] = usuario.id_usuario
         session["usuario_nombre"] = usuario.username
@@ -202,26 +184,29 @@ def inicioSesion():
 
     return render_template("inicioSesion.html")
 
+
 @app.route("/inicio")
 def inicio():
     if "usuario_id" in session:
-        response = make_response(render_template("inicio.html"))
-        return response
+        return make_response(render_template("inicio.html"))
     flash("Debes iniciar sesión primero.")
     return redirect(url_for("inicioSesion"))
+
 
 def base():
     return render_template("base.html")
 
-# Recuperación de contraseña (formulario)
+
 @app.route("/recuperar_contrasena")
 def recuperar_contrasena():
     return render_template("recuperar_contrasena.html")
 
-# Token de recuperación
+
+# ---------------------------- TOKENS DE RECUPERACIÓN ----------------------------
 def generar_token(correo):
     s = URLSafeTimedSerializer(app.secret_key)
     return s.dumps(correo, salt="recuperacion-clave")
+
 
 def verificar_token(token, max_age=3600):
     s = URLSafeTimedSerializer(app.secret_key)
@@ -230,7 +215,8 @@ def verificar_token(token, max_age=3600):
     except Exception:
         return None
 
-# Envío de instrucciones de recuperación
+
+# ---------------------------- ENVÍO DE CORREO ----------------------------
 @app.route("/enviar_instrucciones", methods=["POST"])
 def enviar_instrucciones():
     correo_usuario = (request.form.get("correo") or "").strip()
@@ -244,13 +230,11 @@ def enviar_instrucciones():
         flash("Debes ingresar al menos uno de los tres campos para recibir el correo de recuperación.")
         return redirect(url_for("recuperar_contrasena"))
 
-    # Buscar por correo
     if correo_usuario:
         persona = Persona.query.filter_by(correo=correo_usuario).first()
         if persona:
             correo_destino = correo_usuario
 
-    # Buscar por username
     if not persona and nombre_usuario:
         usuario = Usuario.query.filter_by(username=nombre_usuario).first()
         if usuario:
@@ -258,7 +242,6 @@ def enviar_instrucciones():
             if persona:
                 correo_destino = persona.correo
 
-    # Buscar por teléfono
     if not persona and telefono_usuario:
         persona = Persona.query.filter_by(telefono=telefono_usuario).first()
         if persona:
@@ -267,7 +250,6 @@ def enviar_instrucciones():
     if persona and correo_destino:
         token = generar_token(correo_destino)
         enlace = url_for("restaurar_contrasena", token=token, _external=True)
-
         msg = Message("Recuperación de contraseña - NAYLEX Store", recipients=[correo_destino])
         msg.html = f"""
         <h2 style="color:#00008B;">Naylex Store - Recuperación de Contraseña</h2>
@@ -284,7 +266,8 @@ def enviar_instrucciones():
     flash("No se encontró ningún registro con los datos ingresados.")
     return redirect(url_for("recuperar_contrasena"))
 
-# Restaurar contraseña con token
+
+# ---------------------------- RESTAURAR CONTRASEÑA ----------------------------
 @app.route("/restaurar_contrasena/<token>", methods=["GET", "POST"])
 def restaurar_contrasena(token):
     correo = verificar_token(token)
@@ -302,8 +285,7 @@ def restaurar_contrasena(token):
         usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
 
         if usuario:
-            # TODO: en producción guardar hash (generate_password_hash)
-            usuario.password = nueva_password
+            usuario.password = nueva_password  # En producción: usar hash
             db.session.commit()
             flash("Tu contraseña fue actualizada exitosamente.")
             return redirect(url_for("inicioSesion"))
@@ -312,11 +294,12 @@ def restaurar_contrasena(token):
 
     return render_template("restaurar_contrasena.html", correo=correo)
 
-# Registro de usuario
+
+# ---------------------------- REGISTRO DE USUARIOS ----------------------------
 @app.route("/registro_usuario", methods=["GET", "POST"])
 def registro_usuario():
     if request.method == "GET":
-        _get_csrf_token()  # fuerza creación del token
+        _get_csrf_token()
 
     if request.method == "POST":
         cc = (request.form.get("cc") or "").strip()
@@ -329,7 +312,6 @@ def registro_usuario():
         password = (request.form.get("password") or "").strip()
 
         try:
-            # Validaciones
             existe_cc = Persona.query.filter_by(cc=cc).first()
             existe_correo = Persona.query.filter_by(correo=correo).first()
             existe_telefono = Persona.query.filter_by(telefono=telefono).first()
@@ -366,7 +348,7 @@ def registro_usuario():
             nuevo_usuario = Usuario(
                 id_persona=nueva_persona.id_persona,
                 username=username,
-                password=password,  # TODO: hash
+                password=password,
                 id_tipo=2,
                 id_estado_usuario=1,
                 fecha_creacion=datetime.now()
@@ -393,16 +375,14 @@ def registro_usuario():
 
     return render_template("registro_usuario.html", datos_anteriores={})
 
-# Cerrar sesión
+
+# ---------------------------- CERRAR SESIÓN ----------------------------
 @app.route("/cerrar_Sesion")
 def cerrar_Sesion():
     session.clear()
     flash("Sesión cerrada correctamente.")
     return redirect(url_for("inicioSesion"))
-
-# --------------------------------------------------------------------
-# EJECUCIÓN
-# --------------------------------------------------------------------
+# ---------------------------- RUN ----------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=not IS_PROD)

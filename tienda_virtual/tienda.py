@@ -65,14 +65,17 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "coloca_tu_token_aqui")
 CSP = {
     "default-src": ["'self'"],
     "img-src": ["'self'", "data:"],
-    "script-src": ["'self'", "https://cdn.jsdelivr.net"],
-    "style-src": ["'self'", "https://cdn.jsdelivr.net"],
-    "font-src": ["'self'", "https://cdn.jsdelivr.net", "data:"],
+    "script-src": ["'self'"],
+    "style-src": ["'self'"],
+    "font-src": ["'self'", "data:"],
     "connect-src": ["'self'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
     "frame-ancestors": ["'none'"],
 }
+
+
+
 
 talisman = Talisman(
     app,

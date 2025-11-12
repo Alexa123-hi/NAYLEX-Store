@@ -128,4 +128,4 @@ def reactivar_cuenta():
         else:
             flash("No se encontró ninguna cuenta con esos datos.", "danger")
 
-    return render_template('reactivar_cuenta.html')
+    return render_template('reactivar_cuenta.html', hide_navbar=True)

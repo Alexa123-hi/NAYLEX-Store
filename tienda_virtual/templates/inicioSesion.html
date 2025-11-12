@@ -1,15 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Inicio de Sesión{% endblock %}
+{% block title %}Inicio de Sesión - NAYLEX Store{% endblock %}
 {% block content %}
 <div class="auth-screen">
   <div class="auth-card">
-    <div class="title">Inicio de Sesión</div>
-    <div class="subtitle">NAYLEX Store</div>
+    <h1 class="title">🛒 NAYLEX STORE</h1>
+    <h2 class="subtitle">Inicio de Sesión</h2>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
-          {% for message in messages %}{{ message }}{% endfor %}
+        <div id="mensaje-flash" class="alert alert-warning text-center">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
@@ -18,25 +20,22 @@
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
       <div class="input-group-nx">
-        <span aria-hidden="true">👥</span>
+        <span>👥</span>
         <input type="text" name="nombreUsuario" placeholder="Usuario" required>
       </div>
 
       <div class="input-group-nx">
-        <span aria-hidden="true">🔒</span>
+        <span>🔒</span>
         <input type="password" name="contrasena" placeholder="Contraseña" required>
       </div>
 
       <button type="submit" class="btn-nx">Iniciar Sesión</button>
     </form>
 
-    <a class="link-nx" href="{{ url_for('registro_usuario') }}">Registrarse</a>
-    <div style="margin-top:4px;">
-      <a class="link-nx" href="{{ url_for('recuperar_contrasena') }}">¿Olvidaste tu contraseña?</a>
-      {% if url_for('perfil_bp.reactivar_cuenta', _external=False) is not none %}
-        <span style="color:#89a3ff"> | </span>
-        <a class="link-nx" href="{{ url_for('perfil_bp.reactivar_cuenta') }}">¿Quieres reactivar tu cuenta?</a>
-      {% endif %}
+    <div class="auth-links">
+      <a class="link-nx" href="{{ url_for('registro_usuario') }}">🧾 Registrarse</a><br>
+      <a class="link-nx" href="{{ url_for('recuperar_contrasena') }}">🔑 ¿Olvidaste tu contraseña?</a><br>
+      <a class="link-nx" href="{{ url_for('perfil_bp.reactivar_cuenta') }}">🔁 ¿Reactivar cuenta?</a>
     </div>
   </div>
 </div>

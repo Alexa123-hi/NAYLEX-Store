@@ -1,58 +1,37 @@
-{% extends 'base.html' %}
-{% block title %}NAYLEX Store - Registro de Usuario{% endblock %}
+{% extends "base.html" %}
+{% block title %}Registro de Usuario - NAYLEX Store{% endblock %}
 {% block content %}
-<div class="page-gradient">
-  <div class="sidebar">
-    <h1 class="header-title" style="font-size:25px;">Registro de Nuevo Usuario</h1>
-    <h2 class="header-sub">NAYLEX Store</h2>
+<div class="auth-screen">
+  <div class="auth-card">
+    <h2 class="title">🧾 Registro de Usuario</h2>
+    <h3 class="subtitle">Crea tu cuenta en NAYLEX STORE</h3>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-info">
-          {% for message in messages %}{{ message }}{% endfor %}
+        <div id="mensaje-flash" class="alert alert-info text-center">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('registro_usuario') }}" method="POST" class="form-stack" autocomplete="off" novalidate>
+    <form action="{{ url_for('registro_usuario') }}" method="POST" autocomplete="off" novalidate>
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-      <label class="sr-only" for="cc">Cédula</label>
-      <div class="input-group-nx"><span aria-hidden="true">🆔</span>
-        <input id="cc" name="cc" type="text" placeholder="Cédula" value="{{ datos_anteriores.get('cc', '') }}" inputmode="numeric" pattern="[0-9]{5,20}" maxlength="20" required>
-      </div>
-      <label class="sr-only" for="nombre">Nombre</label>
-      <div class="input-group-nx"><span aria-hidden="true">👤</span>
-        <input id="nombre" name="nombre" type="text" placeholder="Nombre" value="{{ datos_anteriores.get('nombre', '') }}" maxlength="60" required autocomplete="given-name">
-      </div>
-      <label class="sr-only" for="apellido">Apellido</label>
-      <div class="input-group-nx"><span aria-hidden="true">👤</span>
-        <input id="apellido" name="apellido" type="text" placeholder="Apellido" value="{{ datos_anteriores.get('apellido', '') }}" maxlength="60" required autocomplete="family-name">
-      </div>
-      <label class="sr-only" for="correo">Correo</label>
-      <div class="input-group-nx"><span aria-hidden="true">📧</span>
-        <input id="correo" name="correo" type="email" placeholder="Correo Electrónico" value="{{ datos_anteriores.get('correo', '') }}" maxlength="120" required autocomplete="email">
-      </div>
-      <label class="sr-only" for="telefono">Teléfono</label>
-      <div class="input-group-nx"><span aria-hidden="true">📞</span>
-        <input id="telefono" name="telefono" type="text" placeholder="Teléfono" value="{{ datos_anteriores.get('telefono', '') }}" inputmode="tel" pattern="[0-9+\-()\s]{7,20}" maxlength="20" required autocomplete="tel">
-      </div>
-      <label class="sr-only" for="direccion">Dirección</label>
-      <div class="input-group-nx"><span aria-hidden="true">🏠</span>
-        <input id="direccion" name="direccion" type="text" placeholder="Dirección" value="{{ datos_anteriores.get('direccion', '') }}" maxlength="120" required autocomplete="address-line1">
-      </div>
-      <label class="sr-only" for="username">Nombre de usuario</label>
-      <div class="input-group-nx"><span aria-hidden="true">👥</span>
-        <input id="username" name="username" type="text" placeholder="Nombre de usuario" value="{{ datos_anteriores.get('username', '') }}" minlength="3" maxlength="35" required autocomplete="username">
-      </div>
-      <label class="sr-only" for="password">Contraseña</label>
-      <div class="input-group-nx"><span aria-hidden="true">🔒</span>
-        <input id="password" name="password" type="password" placeholder="Contraseña" minlength="6" maxlength="35" required autocomplete="new-password">
-      </div>
-      <button type="submit" class="btn-nx">Crear Cuenta</button>
+
+      <div class="input-group-nx"><span>🆔</span><input type="text" name="cc" placeholder="Cédula" required></div>
+      <div class="input-group-nx"><span>👤</span><input type="text" name="nombre" placeholder="Nombre" required></div>
+      <div class="input-group-nx"><span>👥</span><input type="text" name="apellido" placeholder="Apellido" required></div>
+      <div class="input-group-nx"><span>📧</span><input type="email" name="correo" placeholder="Correo Electrónico" required></div>
+      <div class="input-group-nx"><span>📞</span><input type="text" name="telefono" placeholder="Teléfono" required></div>
+      <div class="input-group-nx"><span>🏠</span><input type="text" name="direccion" placeholder="Dirección" required></div>
+      <div class="input-group-nx"><span>👤</span><input type="text" name="username" placeholder="Nombre de usuario" required></div>
+      <div class="input-group-nx"><span>🔒</span><input type="password" name="password" placeholder="Contraseña" required></div>
+
+      <button type="submit" class="btn-nx">Crear cuenta</button>
     </form>
 
     <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
   </div>
 </div>
-<div class="sub-bar"><h2 style="margin:0;">Nos complace saber que quiere ser parte de NAYLEX STORE</h2></div>
 {% endblock %}

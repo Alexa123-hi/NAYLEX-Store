@@ -2,42 +2,29 @@
 {% block title %}Recuperar Contraseña{% endblock %}
 {% block content %}
 <div class="auth-screen">
-  <div class="recovery-form">
-    <h2>Recuperar Contraseña</h2>
-    <h1>Ingrese alguno de los datos solicitados para enviar las instrucciones</h1>
+  <div class="auth-card">
+    <h2 class="title">🔑 Recuperar Contraseña</h2>
+    <h3 class="subtitle">Ingresa alguno de los datos para recibir las instrucciones</h3>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
-          {% for message in messages %}{{ message }}{% endfor %}
+        <div id="mensaje-flash" class="alert alert-warning text-center">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
     <form action="{{ url_for('enviar_instrucciones') }}" method="POST" autocomplete="off" novalidate>
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-      <div class="input-group-nx">
-        <span aria-hidden="true">📧</span>
-        <input type="email" name="correo" placeholder="Ingresa tu correo electrónico">
-      </div>
-
-      <div class="input-group-nx">
-        <span aria-hidden="true">👥</span>
-        <input type="text" name="username" placeholder="Ingresa tu nombre de usuario">
-      </div>
-
-      <div class="input-group-nx">
-        <span aria-hidden="true">📱</span>
-        <input type="text" name="telefono" placeholder="Ingresa tu número telefónico">
-      </div>
-
-      <button type="submit" class="btn-nx">📬 Enviar instrucciones</button>
+      <div class="input-group-nx"><span>📧</span><input type="email" name="correo" placeholder="Correo electrónico"></div>
+      <div class="input-group-nx"><span>👥</span><input type="text" name="username" placeholder="Nombre de usuario"></div>
+      <div class="input-group-nx"><span>📱</span><input type="text" name="telefono" placeholder="Número telefónico"></div>
+      <button type="submit" class="btn-nx">Enviar instrucciones</button>
     </form>
 
     <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
   </div>
 </div>
-
-<script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

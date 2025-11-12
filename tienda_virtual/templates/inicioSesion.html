@@ -55,7 +55,6 @@
             flex-direction: column;
             gap: 15px;
         }
-/* mensajes alerta */
         .alert {
             font-size: 20px;
             color: yellow;
@@ -73,9 +72,8 @@
             gap: 15px;
             width: 100%;
         }
-/* seccion del bloque para ingresar usuario y contraseña */
+
         .input-group { 
-            /* background: white; */ 
             background: #4a91fe;
             display: flex;
             align-items: center;
@@ -84,14 +82,13 @@
             width: 90%;
             border: 3px solid black;
         }
-/* figuras de candado y muñeco */
+
         .input-group span {
             font-size: 20px;
             margin-right: 10px;
             color: #00008B;
-            
         }
-/* ingreso de datos  */
+
         .input-group input {
             border: none;
             outline: none;
@@ -100,12 +97,11 @@
             border-radius: 5px;
             font-family: 'Times New Roman', Times, serif;
             border: 3px solid black;
-            
         }
-/* boton de ingreso */
+
         .btn-login {
             background-color: #4CAF50;
-            border: none;
+            border: 5px double black;
             color: white;
             padding: 5px 20px;
             font-size: 22px;
@@ -114,7 +110,6 @@
             width: 80%;
             transition: background 0.3s;
             font-family: 'Times New Roman', Times, serif;
-            border: 4px double black;
             margin-top: 20px;
         }
 
@@ -133,13 +128,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* font-size: 14px; */
             font-size: clamp(5px, 1.5vw, 14px);
             border: 8px double white;
-            
         }
-
-
     </style>
 </head>
 <body>
@@ -161,7 +152,8 @@
           {% endif %}
         {% endwith %}
         
-        <form action="{{ url_for('inicioSesion') }}" method="POST" > <!-- evitar usuarios pregrabados autocomplete="off"-->
+        <form action="{{ url_for('inicioSesion') }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <span>👥</span>
                 <input type="text" id="nombreUsuario" name="nombreUsuario" placeholder="Usuario" required>
@@ -172,8 +164,6 @@
                 <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required>
             </div>
             <button type="submit" class="btn-login">🌅Iniciar Sesión🌅</button>
-          </div>
-
         </form>
 
         <div style="margin-top: 7px;">
@@ -187,7 +177,7 @@
          <a href="{{ url_for('recuperar_contrasena') }}" style="color: #FFD700; font-size: 18px; text-decoration: none;">¿Olvidaste tu contraseña?</a>
        </div>
 
-        <div style="margin-top: 8px;">
+       <div style="margin-top: 8px;">
          <a href="{{ url_for('perfil_bp.reactivar_cuenta') }}" style="color: #FFD700; font-size: 18px; text-decoration: none;">
            ¿Quieres reactivar tu cuenta?
          </a>
@@ -200,7 +190,6 @@
     <h2>Querido usuario, esperamos que disfrute de la Tienda Virtual NAYLEX STORE</h2>
 </div>
 
-<!-- Script para ocultar el mensaje flash después de 3 segundos -->
 <script>
     setTimeout(function() {
         var mensaje = document.getElementById('mensaje-flash');

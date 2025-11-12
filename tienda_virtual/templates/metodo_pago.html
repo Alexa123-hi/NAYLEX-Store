@@ -37,6 +37,7 @@
             </script>
         {% else %}
         <form method="POST" action="{{ url_for('compras_bp.pago') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label for="metodo" class="form-label">📠Método de pago:</label>
                 <select class="form-select" id="metodo" name="metodo" required onchange="mostrarCamposPago()">
@@ -47,7 +48,6 @@
                 </select>
             </div>
 
-            <!-- Campos de tarjeta -->
             <div id="datos-tarjeta" style="display:none;">
                 <div class="mb-3">
                     <label for="numero_tarjeta" class="form-label">💳Número de tarjeta:</label>
@@ -60,9 +60,8 @@
                 <div class="mb-3">
                     <label for="expira" class="form-label">🗓️Fecha de expiración:</label>
                     <input type="text" class="form-control" id="expira" name="expira" 
-                    placeholder="MM/AA" pattern="^(0[1-9]|1[0-2])\/\d{2}$" required>
+                    placeholder="MM/AA" pattern="^(0[1-9]|1[0-2])\/\d{2}$">
                     <small class="form-text text-muted">Formato: MM/AA. Ejemplo: 07/26</small>
-
                 </div>
                 <div class="mb-3">
                     <label for="cvv" class="form-label">🏷️CVV:</label>
@@ -70,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- Campos de PSE -->
             <div id="datos-pse" style="display:none;">
                 <div class="mb-3">
                     <label for="banco" class="form-label">🏦Banco:</label>
@@ -94,16 +92,14 @@
     </div>
 </div>
 <script>
-    // validación segun selección(se muestran los campos)
     function mostrarCamposPago() {
-        var select = document.getElementById('metodo'); //selección segun el metodo
-        var tarjeta = document.getElementById('datos-tarjeta'); //llama los html segun la elección
+        var select = document.getElementById('metodo');
+        var tarjeta = document.getElementById('datos-tarjeta');
         var pse = document.getElementById('datos-pse');
-        var selectedText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : ""; //obtiene el texto (metodo)
+        var selectedText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : "";
 
-        tarjeta.style.display = 'none'; //para no mostrar los html
+        tarjeta.style.display = 'none';
         pse.style.display = 'none';
-
         document.querySelectorAll('#datos-tarjeta input, #datos-pse input').forEach(function(inp){inp.required = false});
 
         if (selectedText.trim() === 'Tarjeta de Crédito') {
@@ -112,9 +108,9 @@
         } else if (selectedText.trim() === 'PSE' || selectedText.trim() === 'Transferencia PSE') {
             pse.style.display = 'block';
             document.querySelectorAll('#datos-pse input').forEach(function(inp){inp.required = true});
-        }//muestra el template segun el metodo seleccionado por el usuario
+        }
     }
-    document.addEventListener('DOMContentLoaded', function() {//
+    document.addEventListener('DOMContentLoaded', function() {
         mostrarCamposPago();
     });
 </script>

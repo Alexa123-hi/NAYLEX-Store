@@ -46,6 +46,7 @@
 
         <div class="shipping-title">🚛Dirección de Envío</div>
         <form method="POST" action="{{ url_for('compras_bp.direccion_envio') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label for="direccion" class="form-label">🏠Dirección:</label>
                 <div class="input-group">

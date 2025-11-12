@@ -1,211 +1,144 @@
 <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <!-- Define el tipo de documento y el idioma -->
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=0.9">
-        <title>Registro Usuario</title>
-        <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
-        <style>
-            body {
-                margin: 0;
-                font-family: 'Times New Roman', Times, serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 70px;
-                height: 75vh;
-                background: linear-gradient(90deg, white, #4a91fe);
-                /* background: linear-gradient(90deg, #1e3c72, #2a5298); */
-            }
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NAYLEX Store - Registro de Usuario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=0.9">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
 
-            .sidebar {
-                padding: 25px 30px;
-                background: linear-gradient(145deg, #0000CD, #00008B);
-                color: white;
-                width: 380px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                border-radius: 15px;
-                border: 10px double white;
-                box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
-                padding: 10px;
-            }
+  <style>
+    body{
+      margin:0;
+      font-family:'Times New Roman', Times, serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-top:70px;
+      height:75vh;
+      background:linear-gradient(90deg, white, #4a91fe);
+    }
+    .sidebar{
+      background: linear-gradient(145deg, #0000CD, #00008B);
+      color:#fff;
+      width:380px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      border-radius:15px;
+      border:10px double #fff;
+      box-shadow:0 4px 12px rgba(0,0,0,.5);
+      padding:25px 20px 20px;
+    }
+    h1{ margin:0 0 6px 0; font-size:25px; line-height:1.2; }
+    h2{ margin:0 0 15px 0; font-size:clamp(12px, 1.5vw, 20px); font-weight:400; }
+    .content{ width:100%; }
+    .alert{ font-size:16.5px; color:yellow; background:rgba(0,0,0,.3); padding:8px; border-radius:8px; margin-bottom:15px; text-align:center; }
+    form{ display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; }
+    .input-group{ background:#4a91fe; display:flex; align-items:center; padding:6px; border-radius:10px; border:3px solid #000; width:85%; margin-top:8px; gap:6px; }
+    .input-group span{ font-size:22px; color:#00008B; line-height:1; display:inline-flex; align-items:center; }
+    .input-group input{ border:2px solid #000; outline:none; width:100%; font-size:16px; padding:6px 8px; border-radius:5px; font-family:'Times New Roman', Times, serif; background:#fff; color:#000; }
+    .btn-registrar{ background:#4CAF50; border:5px double #000; color:#fff; padding:8px 10px; font-size:20px; border-radius:8px; cursor:pointer; width:70%; transition:background .3s ease; font-family:'Times New Roman', Times, serif; margin-top:16px; }
+    .btn-registrar:hover{ background:#45a049; }
+    .link{ color:#FFD700; font-size:18px; margin-top:10px; text-decoration:none; }
+    .sub-bar{ position:fixed; bottom:0; left:0; width:99%; background:#00008B; color:#fff; height:30px; display:flex; justify-content:center; align-items:center; font-size:clamp(5px, 1.5vw, 14px); border:8px double #fff; padding:0 8px; }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
 
-            .sub-bar {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 99%;
-                background-color: #00008B;
-                color: white;
-                height: 30px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                /* font-size: 14px; */
-                font-size: clamp(5px, 1.5vw, 14px);
-                border: 8px double white;
-                
-            }
+  <div class="sidebar">
+    <h1>Registro de Nuevo Usuario</h1>
+    <h2>NAYLEX Store</h2>
 
-            h1 {
-                margin-bottom: 15px;
-                font-size: 25px;
-            }
+    <div class="content">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div id="mensaje-flash" class="alert">
+            {% for message in messages %}
+              {{ message }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
 
-            h2 {
-                margin-bottom: 15px;
-                font-size: clamp(12px, 1.5vw, 20px);
-            }
+    <!-- 👇 IMPORTANTE: token CSRF -->
+    <form action="{{ url_for('registro_usuario') }}" method="POST" autocomplete="off" novalidate>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-            form { 
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1px;
-                width: 100%;
-            }
+      <label class="sr-only" for="cc">Cédula</label>
+      <div class="input-group">
+        <span aria-hidden="true">🆔</span>
+        <input id="cc" name="cc" type="text" placeholder="Cédula"
+               value="{{ datos_anteriores.get('cc', '') }}" inputmode="numeric" pattern="[0-9]{5,20}" maxlength="20" required>
+      </div>
 
-            .input-group {
-                background: #4a91fe;
-                display: flex;
-                align-items: center;
-                padding: 1px;
-                border-radius: 10px;
-                border: 3px solid black;
-                width: 85%;
-                margin-top: 8px;
-            }
+      <label class="sr-only" for="nombre">Nombre</label>
+      <div class="input-group">
+        <span aria-hidden="true">👤</span>
+        <input id="nombre" name="nombre" type="text" placeholder="Nombre"
+               value="{{ datos_anteriores.get('nombre', '') }}" maxlength="60" required autocomplete="given-name">
+      </div>
 
-            .input-group span {
-                font-size: 25px;
-                margin-right: 4px;
-                color: #00008B;
-                padding: -10px;
-            }
+      <label class="sr-only" for="apellido">Apellido</label>
+      <div class="input-group">
+        <span aria-hidden="true">👤</span>
+        <input id="apellido" name="apellido" type="text" placeholder="Apellido"
+               value="{{ datos_anteriores.get('apellido', '') }}" maxlength="60" required autocomplete="family-name">
+      </div>
 
-            .input-group input {
-                border: none;
-                outline: none;
-                width: 80%;
-                font-size: 16px;
-                padding: 4px;
-                border-radius: 5px;
-                font-family: 'Times New Roman', Times, serif;
-                border: 2px solid black;
-            }
+      <label class="sr-only" for="correo">Correo Electrónico</label>
+      <div class="input-group">
+        <span aria-hidden="true">📧</span>
+        <input id="correo" name="correo" type="email" placeholder="Correo Electrónico"
+               value="{{ datos_anteriores.get('correo', '') }}" maxlength="120" required autocomplete="email">
+      </div>
 
-            .btn-registrar {
-                background-color: #4CAF50;
-                border: 5px double black;
-                color: white;
-                padding: 6px;
-                font-size: 20px;
-                border-radius: 8px;
-                cursor: pointer;
-                width: 65%;
-                transition: background 0.3s;
-                font-family: 'Times New Roman', Times, serif;
-                margin-top: 20px;
-            }
+      <label class="sr-only" for="telefono">Teléfono</label>
+      <div class="input-group">
+        <span aria-hidden="true">📞</span>
+        <input id="telefono" name="telefono" type="text" placeholder="Teléfono"
+               value="{{ datos_anteriores.get('telefono', '') }}" inputmode="tel" pattern="[0-9+\-()\s]{7,20}" maxlength="20" required autocomplete="tel">
+      </div>
 
-            .btn-registrar:hover {
-                background-color: #45a049;
-            }
+      <label class="sr-only" for="direccion">Dirección</label>
+      <div class="input-group">
+        <span aria-hidden="true">🏠</span>
+        <input id="direccion" name="direccion" type="text" placeholder="Dirección"
+               value="{{ datos_anteriores.get('direccion', '') }}" maxlength="120" required autocomplete="address-line1">
+      </div>
 
-            .alert {
-                font-size: 16.5px;
-                color: yellow;
-                background-color: rgba(0,0,0,0.3);
-                padding: 8px;
-                border-radius: 8px;
-                margin-bottom: 15px;
-                text-align: center;
-            }
+      <label class="sr-only" for="username">Nombre de usuario</label>
+      <div class="input-group">
+        <span aria-hidden="true">👥</span>
+        <input id="username" name="username" type="text" placeholder="Nombre de usuario"
+               value="{{ datos_anteriores.get('username', '') }}" minlength="3" maxlength="35" required autocomplete="username">
+      </div>
 
-        </style>
-    </head>
-    <body>
+      <label class="sr-only" for="password">Contraseña</label>
+      <div class="input-group">
+        <span aria-hidden="true">🔒</span>
+        <input id="password" name="password" type="password" placeholder="Contraseña"
+               minlength="6" maxlength="35" required autocomplete="new-password">
+      </div>
 
-        <div class="sidebar">
-            
-            <h1>Registro de Nuevo Usuario<br>NAYLEX Store</h1>
+      <button type="submit" class="btn-registrar">Crear Cuenta</button>
+    </form>
 
-            <div class="content">
-                {% with messages = get_flashed_messages() %}
-                  {% if messages %}
-                    <div id="mensaje-flash" class="alert">
-                      {% for message in messages %}
-                        {{ message }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                {% endwith %}
-            </div>
+    <a class="link" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
+  </div>
 
-            <form action="{{ url_for('registro_usuario') }}" method="POST">
+  <div class="sub-bar" role="contentinfo" aria-live="polite">
+    <h2 style="margin:0;">Nos complace saber que quiere ser parte de NAYLEX STORE</h2>
+  </div>
 
-                <div class="input-group">
-                    <span>🆔</span>
-                    <input type="text" name="cc" placeholder="Cédula" value="{{ datos_anteriores.get('cc', '') }}"required>
-                </div>
+  <script>
+    setTimeout(function(){
+      var mensaje = document.getElementById('mensaje-flash');
+      if(mensaje){ mensaje.style.display='none'; }
+    }, 3000);
+  </script>
 
-                <div class="input-group">
-                    <span>👤</span>
-                    <input type="text" name="nombre" placeholder="Nombre" value="{{ datos_anteriores.get('nombre', '') }}"required>
-                </div>
-
-                <div class="input-group">
-                    <span>👤</span>
-                    <input type="text" name="apellido" placeholder="Apellido" value="{{ datos_anteriores.get('apellido', '') }}" required>
-                </div>
-
-                <div class="input-group">
-                    <span>📧</span>
-                    <input type="email" name="correo" placeholder="Correo Electrónico" value="{{ datos_anteriores.get('correo', '') }}" required>
-                </div>
-
-                <div class="input-group">
-                    <span>📞</span>
-                    <input type="text" name="telefono" placeholder="Teléfono" value="{{ datos_anteriores.get('telefono', '') }}"required>
-                </div>
-
-                <div class="input-group">
-                    <span>🏠</span>
-                    <input type="text" name="direccion" placeholder="Dirección" value="{{ datos_anteriores.get('direccion', '') }}"required>
-                </div>
-
-                <div class="input-group">
-                    <span>👥</span>
-                    <input type="text" name="username" placeholder="Nombre de usuario" value="{{ datos_anteriores.get('username', '') }}"required>
-                </div>
-
-                <div class="input-group">
-                    <span>🔒</span>
-                    <input type="password" name="password" placeholder="Contraseña" value="{{ datos_anteriores.get('password', '') }}"required>
-                </div>
-
-                <button type="submit" class="btn-registrar">Crear Cuenta</button>
-
-                <a href="{{ url_for('inicioSesion') }}" style="color: #FFD700; font-size: 18px; margin-top: 10px; text-decoration: none;">Volver al inicio de sesión</a>
-    
-                <div class="sub-bar">
-                    <h2>Nos complace saber que quiere ser parte de NAYLEX STORE</h2>
-                </div>
-            </form>
-        </div>
-        <script>
-            setTimeout(function() {
-                var mensaje = document.getElementById('mensaje-flash');
-                if (mensaje) {
-                    mensaje.style.display = 'none';
-                }
-            }, 3000);
-        </script>
-        
-    </body>
-    
+</body>
 </html>

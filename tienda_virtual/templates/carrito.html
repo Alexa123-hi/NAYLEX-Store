@@ -41,7 +41,7 @@
             <tbody>
                 {% for item in productos %}
                 <tr>
-                    <td>{{ item.producto.nombre }}</td>  <!--busqueda de los datos y el formato para mostrarlos-->
+                    <td>{{ item.producto.nombre }}</td>
                     <td>{{ item.proveedor.id_proveedor }}</td>
                     <td>{{ item.cantidad }}</td>
                     <td>${{ "{:,.0f}".format(item.precio) }}</td>
@@ -50,13 +50,13 @@
                     <td>${{ "{:,.0f}".format(item.subtotal) }}</td>
                     <td>
                         <form action="{{ url_for('carrito_compras_bp.restar_unidad_carrito', key=item.key) }}" method="post" style="display:inline;">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-outline-warning" type="submit" title="Eliminar una unidad">−</button>
                         </form>
-                        <a href="{{ url_for('carrito_compras_bp.eliminar_del_carrito', key=item.key) }}" 
-                        class="btn btn-outline-danger"
-                        onclick="return confirm('¿Estas seguro de que deseas eliminar todas las unidades de este producto del carrito?')">
-                        ✂️Eliminar
-                        </a> <!--llamado de funciones para la acción del boton-->
+                        <form action="{{ url_for('carrito_compras_bp.eliminar_del_carrito', key=item.key) }}" method="post" style="display:inline;" onsubmit="return confirm('¿Estas seguro de que deseas eliminar todas las unidades de este producto del carrito?')">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-outline-danger" type="submit">✂️Eliminar</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -75,8 +75,10 @@
             </div>
             <div>
                 <a href="{{ url_for('productos_bp.productos') }}" class="btn btn-outline-primary">↩️Volver al catálogo</a>
-                <a href="{{ url_for('carrito_compras_bp.vaciar_carrito') }}" class="btn btn-warning ms-2"
-                   onclick="return confirm('¿Seguro que quieres vaciar el carrito?')">🗑️Vaciar carrito</a>
+                <form action="{{ url_for('carrito_compras_bp.vaciar_carrito') }}" method="post" style="display:inline;" onsubmit="return confirm('¿Seguro que quieres vaciar el carrito?')">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-warning ms-2" type="submit">🗑️Vaciar carrito</button>
+                </form>
             </div>
         </div>
     {% else %}

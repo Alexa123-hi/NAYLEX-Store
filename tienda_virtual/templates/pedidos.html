@@ -1,142 +1,39 @@
 {% extends 'base.html' %}
 {% block title %}Pedidos{% endblock %}
 
-{% block head %}
-<style>
-/* ================== ESTILOS DE PEDIDOS ================== */
-
-.pedido-card {
-    background-color: #fff;
-    border: 2px solid var(--borde);
-    border-radius: 10px;
-    padding: 15px 20px;
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.pedido-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
-    transform: scale(1.01);
-}
-
-/* Estados con tus colores personalizados */
-.bg-pendiente {
-    background: var(--dorado);
-    color: #000;
-    font-weight: bold;
-}
-
-.bg-procesado {
-    background: var(--azul-2);
-    color: #fff;
-    font-weight: bold;
-}
-
-.bg-enviado {
-    background: var(--azul);
-    color: #fff;
-    font-weight: bold;
-}
-
-.bg-entregado {
-    background: var(--verde);
-    color: #fff;
-    font-weight: bold;
-}
-
-.bg-cancelado {
-    background: #6c757d;
-    color: #fff;
-    font-weight: bold;
-}
-
-/* Badges */
-.badge {
-    border-radius: 10px;
-    font-size: 0.9rem;
-    padding: 6px 10px;
-}
-
-/* Botones coherentes con tu paleta */
-.btn {
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-weight: 600;
-    transition: 0.3s;
-    border: 2px solid transparent;
-}
-
-.btn-outline-primary {
-    border: 2px solid var(--azul-2);
-    color: var(--azul-2);
-    background: #fff;
-}
-
-.btn-outline-primary:hover {
-    background: var(--azul-2);
-    color: #fff;
-}
-
-.btn-outline-danger {
-    border: 2px solid #b30000;
-    color: #b30000;
-    background: #fff;
-}
-
-.btn-outline-danger:hover {
-    background: #b30000;
-    color: #fff;
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    margin-top: 25px;
-    color: #fff;
-    background: var(--azul);
-    padding: 12px 0;
-    font-weight: 500;
-    border-top: 3px solid var(--dorado);
-    font-family: Georgia, 'Times New Roman', Times, serif;
-}
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
     {% if pedidos %}
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 {% for pedido in pedidos %}
-                <div class="pedido-card">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="card shadow-sm mb-3 border-0">
+                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                         
                         <div class="mb-2 mb-md-0">
-                            <span class="badge bg-primary me-2">🧮 #{{ pedido.id_pedido }}</span>
+                            <span class="badge bg-primary me-2">#{{ pedido.id_pedido }}</span>
                             <b>📅 Fecha:</b> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}
                         </div>
 
                         <div class="mb-2 mb-md-0">
                             <b>🚦 Estado:</b>
                             <span class="badge 
-                                {% if pedido.estado_pedido.estado == 'Pendiente' %} bg-pendiente
-                                {% elif pedido.estado_pedido.estado == 'Procesado' %} bg-procesado
-                                {% elif pedido.estado_pedido.estado == 'Enviado' %} bg-enviado
-                                {% elif pedido.estado_pedido.estado == 'Entregado' %} bg-entregado
-                                {% else %} bg-cancelado {% endif %}">
+                                {% if pedido.estado_pedido.estado == 'Pendiente' %} bg-warning text-dark
+                                {% elif pedido.estado_pedido.estado == 'Procesado' %} bg-info
+                                {% elif pedido.estado_pedido.estado == 'Enviado' %} bg-primary
+                                {% elif pedido.estado_pedido.estado == 'Entregado' %} bg-success
+                                {% else %} bg-secondary {% endif %}">
                                 {{ pedido.estado_pedido.estado }}
                             </span>
                         </div>
 
                         <div>
-                            <a href="{{ url_for('compras_bp.detalle_pedido', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-primary">
-                                📊 Ver detalles
+                            <a href="{{ url_for('compras_bp.detalle_pedido', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-primary btn-sm">
+                                Ver detalles
                             </a>
-
                             {% if 1 <= pedido.id_estado_pedido <= 4 %}
-                            <a href="{{ url_for('compras_bp.factura', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-danger" target="_blank">
-                                🧾 Factura
+                            <a href="{{ url_for('compras_bp.factura', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-danger btn-sm" target="_blank">
+                                Factura
                             </a>
                             {% endif %}
                         </div>
@@ -147,13 +44,13 @@ footer {
             </div>
         </div>
     {% else %}
-        <div class="alert alert-info text-center mt-4">
-            <i class="bi bi-bag"></i> 😔 No tienes pedidos realizados.
+        <div class="alert alert-info text-center">
+            😔 No tienes pedidos realizados.
         </div>
     {% endif %}
 </div>
 
-<footer>
+<footer class="bg-primary text-white text-center py-2 mt-4">
     Tienda Virtual del Sistema de Inventario TechSolutions
 </footer>
 {% endblock %}

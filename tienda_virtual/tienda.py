@@ -8,7 +8,7 @@ from flask import (
 from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
 from datetime import timedelta
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import os, secrets
 
 # ---------------------------- MÓDULOS PROPIOS ----------------------------
@@ -118,7 +118,7 @@ def _csrf_protect_hook():
 app.jinja_env.globals["csrf_token"] = _get_csrf_token
 
 # -------------------------------------------------------------------------
-# INICIO DE SESIÓN
+# INICIO DE SESIÓN (corregido con check_password_hash)
 # -------------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
@@ -131,19 +131,31 @@ def inicioSesion():
             return render_template("inicioSesion.html", hide_navbar=True)
 
         usuario = Usuario.query.filter_by(username=username).first()
-        contexto = Contexto(usuario, password)
-        reglas_login = LoginValido(UsuarioExiste(), ContraseñaCorrecta(), UsuarioActivo(), EsCliente())
 
-        if not reglas_login.interpretar(contexto):
+        # Validar existencia
+        if not usuario:
             flash("Credenciales incorrectas o usuario inactivo.", "danger")
             return render_template("inicioSesion.html", hide_navbar=True)
 
+        # Verificar contraseña (hash o texto plano para compatibilidad)
+        if not (usuario.password == password or check_password_hash(usuario.password, password)):
+            flash("Credenciales incorrectas o usuario inactivo.", "danger")
+            return render_template("inicioSesion.html", hide_navbar=True)
+
+        # Verificar estado activo
+        if getattr(usuario, "id_estado_usuario", 1) != 1:
+            flash("Tu cuenta está inactiva. Contacta con el administrador.", "warning")
+            return render_template("inicioSesion.html", hide_navbar=True)
+
+        # Crear sesión
         session.clear()
         session["usuario_id"] = usuario.id_usuario
         session["usuario_nombre"] = usuario.username
+
         cliente = Cliente.query.filter_by(id_usuario=usuario.id_usuario).first()
         if cliente:
             session["id_cliente"] = cliente.id_cliente
+
         flash(f"¡Bienvenido {usuario.username}!", "success")
         return redirect(url_for("inicio"))
 
@@ -242,11 +254,10 @@ def restaurar_contrasena(token):
     return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
 
 # -------------------------------------------------------------------------
-# REGISTRO DE USUARIO (funcional)
+# REGISTRO DE USUARIO
 # -------------------------------------------------------------------------
 @app.route("/registro_usuario", methods=["GET", "POST"])
 def registro_usuario():
-    """Registra un nuevo usuario en el sistema."""
     if request.method == "POST":
         cc = request.form.get("cc", "").strip()
         nombre = request.form.get("nombre", "").strip()
@@ -257,12 +268,10 @@ def registro_usuario():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
 
-        # Validación básica
         if not all([cc, nombre, apellido, correo, telefono, direccion, username, password]):
             flash("⚠️ Todos los campos son obligatorios.", "warning")
             return redirect(url_for("registro_usuario"))
 
-        # Validaciones de unicidad
         if Persona.query.filter_by(cc=cc).first():
             flash("⚠️ La cédula ya está registrada.", "warning")
             return redirect(url_for("registro_usuario"))
@@ -274,7 +283,6 @@ def registro_usuario():
             return redirect(url_for("registro_usuario"))
 
         try:
-            # Crear Persona
             nueva_persona = Persona(
                 cc=cc,
                 nombre=nombre,
@@ -286,7 +294,6 @@ def registro_usuario():
             db.session.add(nueva_persona)
             db.session.commit()
 
-            # Crear Usuario
             nuevo_usuario = Usuario(
                 username=username,
                 password=generate_password_hash(password),

@@ -1,91 +1,91 @@
 {% extends 'base.html' %}
 {% block title %}Pedidos{% endblock %}
 
-{% block content %}
+{% block head %}
 <style>
-    /* 🔹 Contenedor general */
-    .pedido-card {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-    }
+/* 🔹 Contenedor general */
+.pedido-card {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
 
-    .pedido-card:hover {
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-        transform: scale(1.01);
-    }
+.pedido-card:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    transform: scale(1.01);
+}
 
-    /* 🔹 Badges de estado */
-    .badge {
-        font-size: 0.9rem;
-        padding: 0.45em 0.7em;
-        border-radius: 8px;
-    }
+/* 🔹 Badges de estado */
+.badge {
+    font-size: 0.9rem;
+    padding: 0.45em 0.7em;
+    border-radius: 8px;
+}
 
-    .bg-pendiente {
-        background-color: #f8d775 !important;
-        color: #000 !important;
-    }
+.bg-pendiente {
+    background-color: #f8d775 !important;
+    color: #000 !important;
+}
 
-    .bg-procesado {
-        background-color: #1bb5e0 !important;
-        color: #fff !important;
-    }
+.bg-procesado {
+    background-color: #1bb5e0 !important;
+    color: #fff !important;
+}
 
-    .bg-enviado {
-        background-color: #0066ff !important;
-        color: #fff !important;
-    }
+.bg-enviado {
+    background-color: #007bff !important;
+    color: #fff !important;
+}
 
-    .bg-entregado {
-        background-color: #28a745 !important;
-        color: #fff !important;
-    }
+.bg-entregado {
+    background-color: #28a745 !important;
+    color: #fff !important;
+}
 
-    .bg-cancelado {
-        background-color: #6c757d !important;
-        color: #fff !important;
-    }
+.bg-cancelado {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
 
-    /* 🔹 Botones */
-    .btn {
-        border-radius: 8px;
-        padding: 5px 12px;
-        font-weight: 500;
-        transition: 0.3s;
-    }
+/* 🔹 Botones */
+.btn {
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-weight: 500;
+    transition: 0.3s;
+}
 
-    .btn-outline-primary:hover {
-        background-color: #007bff;
-        color: white;
-    }
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+}
 
-    .btn-outline-danger:hover {
-        background-color: #dc3545;
-        color: white;
-    }
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
 
-    /* 🔹 Título inferior */
-    footer {
-        text-align: center;
-        margin-top: 20px;
-        color: #fff;
-        background-color: #001f7a;
-        padding: 10px 0;
-        border-radius: 0 0 10px 10px;
-        font-weight: 500;
-    }
+/* 🔹 Footer */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #fff;
+    background-color: #001f7a;
+    padding: 10px 0;
+    border-radius: 0 0 10px 10px;
+    font-weight: 500;
+}
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container mt-4">
-
     {% if pedidos %}
         <div class="row justify-content-center">
             <div class="col-lg-10">
-
                 {% for pedido in pedidos %}
                 <div class="pedido-card">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
@@ -122,10 +122,8 @@
                     </div>
                 </div>
                 {% endfor %}
-
             </div>
         </div>
-
     {% else %}
         <div class="alert alert-info text-center mt-4">
             <i class="bi bi-bag"></i> 😔 No tienes pedidos realizados.
@@ -136,5 +134,4 @@
 <footer>
     Tienda Virtual del Sistema de Inventario TechSolutions
 </footer>
-
 {% endblock %}

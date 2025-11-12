@@ -16,30 +16,14 @@
 
     <form method="POST" action="{{ url_for('perfil_bp.reactivar_cuenta') }}" autocomplete="off" novalidate>
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-      <div class="input-group-nx">
-        <span aria-hidden="true">👥</span>
-        <input type="text" name="username" placeholder="Usuario">
-      </div>
-      <div class="input-group-nx">
-        <span aria-hidden="true">🆔</span>
-        <input type="text" name="cc" placeholder="Cédula">
-      </div>
-      <div class="input-group-nx">
-        <span aria-hidden="true">📞</span>
-        <input type="text" name="telefono" placeholder="Teléfono">
-      </div>
-      <div class="input-group-nx">
-        <span aria-hidden="true">📧</span>
-        <input type="email" name="correo" placeholder="Correo electrónico">
-      </div>
-
+      <div class="input-group-nx"><span>👥</span><input name="username" placeholder="Usuario"></div>
+      <div class="input-group-nx"><span>🆔</span><input name="cc" placeholder="Cédula"></div>
+      <div class="input-group-nx"><span>📞</span><input name="telefono" placeholder="Teléfono"></div>
+      <div class="input-group-nx"><span>📧</span><input name="correo" placeholder="Correo electrónico"></div>
       <button type="submit" class="btn-nx">🔁 Reactivar cuenta</button>
     </form>
 
     <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
   </div>
 </div>
-
-<script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

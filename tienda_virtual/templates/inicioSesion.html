@@ -1,17 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Inicio de Sesión - NAYLEX Store{% endblock %}
+{% block title %}Inicio de Sesión{% endblock %}
 {% block content %}
-<div class="auth-screen">
-  <div class="auth-card">
-    <h1 class="title">🛒 NAYLEX STORE</h1>
-    <h2 class="subtitle">Inicio de Sesión</h2>
+<div class="auth-screen" style="background: linear-gradient(90deg, #f8fbff, #a8c8ff, #66a3ff);">
+  <div class="auth-card" style="
+    width: 380px;
+    background-color: #082b9c;
+    border: 3px solid #0033cc;
+    border-radius: 15px;
+    padding: 25px 35px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  ">
+    <h1 style="font-size: 26px; font-weight: bold; color: #fff;">🛒 NAYLEX STORE</h1>
+    <h2 style="font-size: 18px; color: #ffc107; margin-top: -5px;">Inicio de Sesión</h2>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-warning text-center">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
+        <div id="mensaje-flash" class="alert alert-warning" style="margin-top:10px; font-weight: 600;">
+          {% for message in messages %}{{ message }}{% endfor %}
         </div>
       {% endif %}
     {% endwith %}
@@ -20,22 +27,38 @@
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
       <div class="input-group-nx">
-        <span>👥</span>
+        <span aria-hidden="true" style="font-size:20px;">👤</span>
         <input type="text" name="nombreUsuario" placeholder="Usuario" required>
       </div>
 
       <div class="input-group-nx">
-        <span>🔒</span>
+        <span aria-hidden="true" style="font-size:20px;">🔒</span>
         <input type="password" name="contrasena" placeholder="Contraseña" required>
       </div>
 
-      <button type="submit" class="btn-nx">Iniciar Sesión</button>
+      <button type="submit" class="btn-nx" style="
+        background-color: #27ae60;
+        color: white;
+        font-weight: 600;
+        font-size: 17px;
+        padding: 8px 0;
+        border-radius: 8px;
+        margin-top: 10px;
+        width: 100%;
+      ">
+        Iniciar Sesión
+      </button>
     </form>
 
-    <div class="auth-links">
-      <a class="link-nx" href="{{ url_for('registro_usuario') }}">🧾 Registrarse</a><br>
-      <a class="link-nx" href="{{ url_for('recuperar_contrasena') }}">🔑 ¿Olvidaste tu contraseña?</a><br>
-      <a class="link-nx" href="{{ url_for('perfil_bp.reactivar_cuenta') }}">🔁 ¿Reactivar cuenta?</a>
+    <div style="margin-top: 12px;">
+      <a class="link-nx" href="{{ url_for('registro_usuario') }}" style="color: #f0f0f0;">🗒️ Registrarse</a>
+    </div>
+
+    <div style="margin-top: 8px; line-height: 1.8;">
+      <a class="link-nx" href="{{ url_for('recuperar_contrasena') }}" style="color: #ffcc00;">🔑 ¿Olvidaste tu contraseña?</a><br>
+      {% if url_for('perfil_bp.reactivar_cuenta', _external=False) is not none %}
+        <a class="link-nx" href="{{ url_for('perfil_bp.reactivar_cuenta') }}" style="color: #a8e1ff;">🧩 ¿Reactivar cuenta?</a>
+      {% endif %}
     </div>
   </div>
 </div>

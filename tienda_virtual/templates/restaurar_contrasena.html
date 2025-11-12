@@ -2,27 +2,23 @@
 {% block title %}Restablecer Contraseña{% endblock %}
 {% block content %}
 <div class="auth-screen">
-  <div class="auth-card">
-    <h2 class="title">💫 Restablecimiento de Contraseña</h2>
-    <h3 class="subtitle">{{ correo }}</h3>
+  <div class="recovery-form">
+    <h2>💫 Restablecimiento de contraseña para:</h2>
+    <h1>{{ correo }}</h1>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-warning text-center">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
+        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
+          {% for message in messages %}{{ message }}{% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
     <form action="" method="POST" autocomplete="off" novalidate>
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-      <div class="input-group-nx">
-        <span>🔒</span>
-        <input type="password" name="nueva_password" placeholder="Nueva contraseña" required>
-      </div>
-      <button type="submit" class="btn-nx">Actualizar contraseña</button>
+      <label for="nueva_password" class="sr-only">Nueva contraseña</label>
+      <input id="nueva_password" type="password" name="nueva_password" placeholder="Ingrese su nueva contraseña" required>
+      <input type="submit" value="📝 Actualizar contraseña" class="btn-nx">
     </form>
 
     <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>

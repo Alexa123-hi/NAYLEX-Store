@@ -3,6 +3,8 @@
   --azul: #00008B;
   --azul-2: #2045c7;
   --azul-3: #142879;
+  --verde: #4CAF50;
+  --verde-hover: #45a049;
   --borde: #e5e5fa;
 }
 
@@ -52,7 +54,9 @@ body {
   transition: color 0.3s;
 }
 .nav-links a:hover { color: #dddddd; }
+
 .sidebar-space { flex-grow: 1; }
+
 .welcome-badge {
   background: #ceff39;
   color: #131313;
@@ -61,7 +65,9 @@ body {
   border-radius: 7px;
   margin-left: 18px;
   font-size: 22px;
+  font-family: 'Times New Roman', Times, serif;
 }
+
 .carrito-link {
   color: #FFD700;
   font-weight: bold;
@@ -73,6 +79,7 @@ body {
   transition: color 0.3s;
 }
 .carrito-link:hover { color: #fff9c4; }
+
 .cart-count {
   background: #FFD700;
   color: #00008B;
@@ -103,41 +110,49 @@ body {
   margin-bottom: 60px;
 }
 
-/* ================== FORMULARIOS AUTH ================== */
+/* ================== LOGIN / REGISTRO / AUTH ================== */
 .auth-screen {
   min-height: calc(100vh - 40px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(90deg, #ffffff, #4a91fe);
-  padding: 0;
-  margin: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #001064, #1565C0);
+  padding: 30px 12px;
 }
 
-.auth-card {
+.auth-card,
+.recovery-form {
   background: #031a8a;
   color: #fff;
   width: 100%;
-  max-width: 380px;
+  max-width: 460px;
   border-radius: 14px;
   border: 3px solid #cfd6ff;
   box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
-  padding: 22px 20px;
+  padding: 25px 20px 25px 20px;
   text-align: center;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.auth-card:hover,
+.recovery-form:hover {
+  transform: scale(1.02);
+  box-shadow: 0 15px 40px rgba(0,0,0,.3);
 }
 
-.auth-card .title {
-  margin: 0 0 8px 0;
-  font-size: 20px;
+.auth-card .title, .recovery-form h2 {
+  margin: 2px 0 10px 0;
+  font-size: 22px;
+  text-align: center;
   font-weight: 700;
 }
-.auth-card .subtitle {
-  font-size: 13px;
+.auth-card .subtitle, .recovery-form h1 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  text-align: center;
+  opacity: .95;
   color: #FFD700;
-  margin-bottom: 10px;
 }
 
-.auth-card .input-group-nx {
+.input-group-nx {
   background: #4a91fe;
   display: flex;
   align-items: center;
@@ -146,96 +161,65 @@ body {
   border-radius: 10px;
   border: 2px solid #000;
   width: 90%;
-  max-width: 300px;
+  max-width: 320px;
   gap: 8px;
-  margin: 6px auto;
+  margin: 8px auto;
 }
-
-.auth-card .input-group-nx span {
+.input-group-nx span {
   font-size: 16px;
   color: var(--azul);
 }
-.auth-card .input-group-nx input {
+.input-group-nx input {
   border: 2px solid #000;
   outline: none;
   width: 100%;
-  font-size: 14px;
-  padding: 4px 6px;
+  font-size: 15px;
+  padding: 6px 8px;
   border-radius: 5px;
   background: #fff;
   color: #000;
-  height: 28px;
+  height: 30px;
 }
 
-.auth-card .btn-nx,
-.auth-card input[type="submit"] {
-  background: #4CAF50;
+.btn-nx,
+input[type="submit"] {
+  background: var(--verde);
   border: 3px double #000;
   color: #fff;
-  padding: 6px 10px;
-  font-size: 14px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  border-radius: 10px;
   cursor: pointer;
-  width: 70%;
-  max-width: 240px;
-  transition: background .3s ease;
-  margin: 8px auto;
+  width: 75%;
+  max-width: 260px;
+  transition: background .3s ease, transform .2s ease;
+  margin: 10px auto;
 }
-.auth-card .btn-nx:hover,
-.auth-card input[type="submit"]:hover { background: #45a049; }
+.btn-nx:hover,
+input[type="submit"]:hover {
+  background: var(--verde-hover);
+  transform: scale(1.05);
+}
 
-.auth-card a {
+.link-nx,
+a.link-nx {
   color: #FFD700;
-  font-size: 13px;
+  font-size: 14px;
+  margin-top: 6px;
   text-decoration: none;
   display: inline-block;
-  margin-top: 4px;
+  text-align: center;
+  transition: color .2s;
 }
+.link-nx:hover { color: #fff; }
 
-/* ================== SIN NAVBAR ================== */
-body.no-navbar {
-  background: linear-gradient(90deg, #ffffff, #4a91fe);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-.main-auth {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100vh - 40px);
-  padding: 0;
-  margin: 0;
-}
-
-/* ================== PRODUCTOS ================== */
-.product-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  padding: 26px;
-  margin-bottom: 36px;
-  border: 2px solid var(--borde);
-  transition: transform .18s, box-shadow .18s;
-}
-.product-card:hover {
-  transform: translateY(-6px) scale(1.025);
-  box-shadow: 0 8px 32px rgba(0,0,30,0.16);
-  border-color: #2a44a8;
-}
-.product-title { font-size: 1.3rem; color: var(--azul); font-weight: bold; }
-
-/* ================== RESPONSIVE NAVBAR ================== */
+/* ================== RESPONSIVE ================== */
 @media (max-width: 900px) {
-  .sidebar {
-    flex-direction: column;
-    height: auto;
-    padding: 12px;
-    text-align: center;
+  .auth-card, .recovery-form {
+    max-width: 90%;
+    padding: 18px;
   }
-  .store-title { margin: 0 0 10px 0; }
-  .nav-links a { margin: 8px; font-size: 18px; }
-  .welcome-badge, .carrito-link { font-size: 18px; margin: 8px 0; }
-  .sub-bar { font-size: 13px; }
+  .auth-card .title { font-size: 20px; }
+  .auth-card .subtitle { font-size: 13px; }
+  .btn-nx { font-size: 14px; }
 }

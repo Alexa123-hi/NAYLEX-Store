@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-# NAYLEX Store – Flask seguro (CSRF + CSP + Cookies + HSTS)
+# NAYLEX Store – Flask seguro (CSRF + CSP + Cookies + HSTS + Resend API)
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
     flash, session, make_response, abort, g
 )
-from flask_mail import Mail, Message
 from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime, timedelta
-import os, re, secrets
+import os, re, secrets, resend
 
 # ---------------------------- MÓDULOS PROPIOS ----------------------------
 from tienda_virtual import db
@@ -57,17 +56,8 @@ app.register_blueprint(carrito_compras_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
-# ---------------------------- CORREO ----------------------------
-app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "naylexstore@gmail.com")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "uyywbugfcsfyeaas")  # mover a variable de entorno en prod
-app.config["MAIL_DEFAULT_SENDER"] = (
-    os.environ.get("MAIL_DEFAULT_NAME", "NAYLEX Store"),
-    os.environ.get("MAIL_DEFAULT_EMAIL", app.config["MAIL_USERNAME"]),
-)
-mail = Mail(app)
+# ---------------------------- CONFIGURAR RESEND ----------------------------
+resend.api_key = os.environ.get("RESEND_API_KEY", "coloca_tu_token_aqui")
 
 # -------------------------------------------------------------------------
 # CABECERAS DE SEGURIDAD Y CSP (TALISMAN)
@@ -191,34 +181,94 @@ def inicio():
     return redirect(url_for("inicioSesion"))
 
 
-@app.route("/recuperar_contrasena")
+# -------------------------------------------------------------------------
+# RECUPERACIÓN DE CONTRASEÑA CON RESEND (Token API)
+# -------------------------------------------------------------------------
+@app.route("/recuperar_contrasena", methods=["GET", "POST"])
 def recuperar_contrasena():
-    return render_template("recuperar_contrasena.html", hide_navbar=True)
-
-
-@app.route("/registro_usuario", methods=["GET", "POST"])
-def registro_usuario():
-    if request.method == "GET":
-        _get_csrf_token()
-
     if request.method == "POST":
-        # (igual que antes)
-        ...
-    return render_template("registro_usuario.html", hide_navbar=True, datos_anteriores={})
+        correo_usuario = (request.form.get("correo") or "").strip()
+        nombre_usuario = (request.form.get("username") or "").strip()
+        telefono_usuario = (request.form.get("telefono") or "").strip()
+
+        persona = None
+        correo_destino = None
+
+        if correo_usuario:
+            persona = Persona.query.filter_by(correo=correo_usuario).first()
+            if persona:
+                correo_destino = correo_usuario
+
+        if not persona and nombre_usuario:
+            usuario = Usuario.query.filter_by(username=nombre_usuario).first()
+            if usuario:
+                persona = Persona.query.filter_by(id_persona=usuario.id_persona).first()
+                if persona:
+                    correo_destino = persona.correo
+
+        if not persona and telefono_usuario:
+            persona = Persona.query.filter_by(telefono=telefono_usuario).first()
+            if persona:
+                correo_destino = persona.correo
+
+        if persona and correo_destino:
+            s = URLSafeTimedSerializer(app.secret_key)
+            token = s.dumps(correo_destino, salt="recuperacion-clave")
+            enlace = url_for("restaurar_contrasena", token=token, _external=True)
+
+            # --- Envío con Resend API ---
+            resend.Emails.send({
+                "from": "NAYLEX Store <no-reply@naylexstore.com>",
+                "to": [correo_destino],
+                "subject": "🔑 Recuperación de contraseña - NAYLEX Store",
+                "html": f"""
+                <h2 style='color:#0044cc'>NAYLEX Store</h2>
+                <p>Hola {persona.nombre},</p>
+                <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+                <p><a href="{enlace}" style='background:#0066ff;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;'>Restablecer contraseña</a></p>
+                <p>Este enlace expirará en 1 hora.</p>
+                """,
+            })
+
+            flash(f"✅ Se enviaron instrucciones de recuperación a {correo_destino}.")
+            return redirect(url_for("inicioSesion"))
+        else:
+            flash("⚠️ No se encontró ningún registro con los datos ingresados.")
+            return render_template("recuperar_contrasena.html", hide_navbar=True)
+
+    return render_template("recuperar_contrasena.html", hide_navbar=True)
 
 
 @app.route("/restaurar_contrasena/<token>", methods=["GET", "POST"])
 def restaurar_contrasena(token):
-    correo = verificar_token(token)
-    if not correo:
-        flash("El enlace de recuperación ha expirado o es inválido.")
+    s = URLSafeTimedSerializer(app.secret_key)
+    try:
+        correo = s.loads(token, salt="recuperacion-clave", max_age=3600)
+    except Exception:
+        flash("El enlace de recuperación ha expirado o es inválido.", "danger")
         return redirect(url_for("inicioSesion"))
 
     if request.method == "POST":
-        ...
+        nueva_password = (request.form.get("nueva_password") or "").strip()
+        if len(nueva_password) < 6:
+            flash("La contraseña debe tener al menos 6 caracteres.", "warning")
+            return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
+
+        persona = Persona.query.filter_by(correo=correo).first()
+        usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
+
+        if usuario:
+            usuario.password = nueva_password
+            db.session.commit()
+            flash("Tu contraseña fue actualizada exitosamente.")
+            return redirect(url_for("inicioSesion"))
+        else:
+            flash("No se pudo actualizar la contraseña.")
+
     return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
 
 
+# -------------------------------------------------------------------------
 @app.route("/cerrar_Sesion")
 def cerrar_Sesion():
     session.clear()

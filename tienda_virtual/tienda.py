@@ -7,7 +7,7 @@ from flask import (
 )
 from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
-from datetime import datetime, timedelta
+from datetime import timedelta
 import os, re, secrets, resend
 
 # ---------------------------- MÓDULOS PROPIOS ----------------------------
@@ -22,10 +22,10 @@ from tienda_virtual.login_interpreter import (
 )
 
 # -------------------------------------------------------------------------
-# CONFIGURACIÓN BÁSICA DE LA APP
+# CONFIGURACIÓN DE LA APP
 # -------------------------------------------------------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "cambia_esto_en_produccion")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clave_segura_dev")
 
 IS_PROD = (
     os.environ.get("RENDER", "0") == "1" or
@@ -60,7 +60,7 @@ app.register_blueprint(perfil_bp)
 resend.api_key = os.environ.get("RESEND_API_KEY", "coloca_tu_token_aqui")
 
 # -------------------------------------------------------------------------
-# CABECERAS DE SEGURIDAD Y CSP (TALISMAN)
+# CABECERAS DE SEGURIDAD (Talisman)
 # -------------------------------------------------------------------------
 CSP = {
     "default-src": ["'self'"],
@@ -130,7 +130,7 @@ def _csrf_protect_hook():
 app.jinja_env.globals["csrf_token"] = _get_csrf_token
 
 # -------------------------------------------------------------------------
-# RUTAS
+# INICIO DE SESIÓN
 # -------------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
@@ -152,10 +152,10 @@ def inicioSesion():
             elif not ContraseñaCorrecta().interpretar(contexto):
                 flash("Contraseña incorrecta. Intente nuevamente.", "danger")
             elif not UsuarioActivo().interpretar(contexto):
-                flash("Su cuenta está inactiva. Debe reactivarla para ingresar.", "warning")
+                flash("Su cuenta está inactiva. Debe reactivarla.", "warning")
             elif not EsCliente().interpretar(contexto):
                 tipo = {1: "Administrador", 3: "Vendedor"}.get(usuario.id_tipo, "Usuario")
-                flash(f"El usuario '{usuario.username}' está registrado como {tipo}.", "info")
+                flash(f"El usuario '{usuario.username}' es {tipo}.", "info")
             return render_template("inicioSesion.html", hide_navbar=True)
 
         session.clear()
@@ -172,7 +172,6 @@ def inicioSesion():
 
     return render_template("inicioSesion.html", hide_navbar=True)
 
-
 @app.route("/inicio")
 def inicio():
     if "usuario_id" in session:
@@ -180,9 +179,8 @@ def inicio():
     flash("Debes iniciar sesión primero.")
     return redirect(url_for("inicioSesion"))
 
-
 # -------------------------------------------------------------------------
-# RECUPERACIÓN DE CONTRASEÑA CON RESEND (Token API)
+# RECUPERAR CONTRASEÑA (Resend API)
 # -------------------------------------------------------------------------
 @app.route("/recuperar_contrasena", methods=["GET", "POST"])
 def recuperar_contrasena():
@@ -216,7 +214,6 @@ def recuperar_contrasena():
             token = s.dumps(correo_destino, salt="recuperacion-clave")
             enlace = url_for("restaurar_contrasena", token=token, _external=True)
 
-            # --- Envío con Resend API ---
             resend.Emails.send({
                 "from": "NAYLEX Store <no-reply@naylexstore.com>",
                 "to": [correo_destino],
@@ -224,9 +221,9 @@ def recuperar_contrasena():
                 "html": f"""
                 <h2 style='color:#0044cc'>NAYLEX Store</h2>
                 <p>Hola {persona.nombre},</p>
-                <p>Recibimos una solicitud para restablecer tu contraseña.</p>
-                <p><a href="{enlace}" style='background:#0066ff;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;'>Restablecer contraseña</a></p>
-                <p>Este enlace expirará en 1 hora.</p>
+                <p>Haz clic para restablecer tu contraseña:</p>
+                <a href="{enlace}" style='background:#0066ff;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;'>Restablecer contraseña</a>
+                <p>El enlace expirará en 1 hora.</p>
                 """,
             })
 
@@ -234,10 +231,7 @@ def recuperar_contrasena():
             return redirect(url_for("inicioSesion"))
         else:
             flash("⚠️ No se encontró ningún registro con los datos ingresados.")
-            return render_template("recuperar_contrasena.html", hide_navbar=True)
-
     return render_template("recuperar_contrasena.html", hide_navbar=True)
-
 
 @app.route("/restaurar_contrasena/<token>", methods=["GET", "POST"])
 def restaurar_contrasena(token):
@@ -262,11 +256,61 @@ def restaurar_contrasena(token):
             db.session.commit()
             flash("Tu contraseña fue actualizada exitosamente.")
             return redirect(url_for("inicioSesion"))
-        else:
-            flash("No se pudo actualizar la contraseña.")
-
+        flash("No se pudo actualizar la contraseña.")
     return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
 
+# -------------------------------------------------------------------------
+# REGISTRO DE NUEVO USUARIO (validaciones completas)
+# -------------------------------------------------------------------------
+@app.route("/registro_usuario", methods=["GET", "POST"])
+def registro_usuario():
+    if request.method == "GET":
+        _get_csrf_token()
+        return render_template("registro_usuario.html", hide_navbar=True)
+
+    if request.method == "POST":
+        nombre = (request.form.get("nombre") or "").strip()
+        apellido = (request.form.get("apellido") or "").strip()
+        username = (request.form.get("username") or "").strip()
+        correo = (request.form.get("correo") or "").strip()
+        telefono = (request.form.get("telefono") or "").strip()
+        cc = (request.form.get("cc") or "").strip()
+        contrasena = (request.form.get("password") or "").strip()
+
+        if not nombre or not apellido or not username or not correo or not contrasena:
+            flash("⚠️ Todos los campos obligatorios deben completarse.", "warning")
+            return render_template("registro_usuario.html", hide_navbar=True)
+
+        if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", correo):
+            flash("❌ Formato de correo no válido.", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+        if not re.match(r"^\d{7,20}$", telefono):
+            flash("❌ El teléfono solo debe tener números (7-20 dígitos).", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+        if not re.match(r"^\d{5,20}$", cc):
+            flash("❌ La cédula solo debe tener números (5-20 dígitos).", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+
+        if Usuario.query.filter_by(username=username).first():
+            flash("⚠️ Ese usuario ya existe.", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+        if Persona.query.filter_by(correo=correo).first():
+            flash("⚠️ Ese correo ya está registrado.", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+        if Persona.query.filter_by(telefono=telefono).first():
+            flash("⚠️ Ese número ya está registrado.", "danger")
+            return render_template("registro_usuario.html", hide_navbar=True)
+
+        nueva_persona = Persona(nombre=f"{nombre} {apellido}", correo=correo, telefono=telefono, cc=cc)
+        db.session.add(nueva_persona)
+        db.session.commit()
+
+        nuevo_usuario = Usuario(username=username, password=contrasena, id_persona=nueva_persona.id_persona, id_tipo=2, estado=True)
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+
+        flash("✅ Registro exitoso. Ahora puedes iniciar sesión.", "success")
+        return redirect(url_for("inicioSesion"))
 
 # -------------------------------------------------------------------------
 @app.route("/cerrar_Sesion")

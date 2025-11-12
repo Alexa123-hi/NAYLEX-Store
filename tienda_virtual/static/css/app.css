@@ -8,6 +8,7 @@
 body {
   margin: 0;
   font-family: Georgia, 'Times New Roman', Times, serif;
+  background-color: #fff;
 }
 
 /* ================== FLASH MESSAGES ================== */
@@ -15,6 +16,9 @@ body {
   list-style: none;
   padding: 8px 12px;
   border-radius: 8px;
+  text-align: center;
+  margin: 6px auto;
+  width: fit-content;
 }
 .alert-success { background: #e8f7ee; color: #125c2b; }
 .alert-danger  { background: #fdecea; color: #8a1c1c; }
@@ -103,82 +107,167 @@ body {
   margin-bottom: 60px;
 }
 
-/* ================== LOGIN / REGISTRO ================== */
-.page-gradient {
-  font-family: 'Times New Roman', Times, serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 70px;
-  height: 75vh;
-  background: linear-gradient(90deg, white, #4a91fe);
+/* ================== LOGIN / REGISTRO / AUTH ================== */
+.auth-screen {
+  min-height: calc(100vh - 90px - 40px);
+  padding: 20px 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(90deg, #ffffff, #4a91fe);
 }
-.sidebar-login {
-  background: linear-gradient(145deg, #0000CD, #00008B);
+.auth-card {
+  background: #031a8a;
   color: #fff;
-  width: 380px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border-radius: 15px;
-  border: 10px double #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,.5);
-  padding: 25px 20px 20px;
-}
-.header-title { margin: 0 0 6px 0; font-size: 35px; line-height: 1.2; }
-.header-sub { margin: 0 0 15px 0; font-size: clamp(12px, 1.5vw, 20px); font-weight: 400; }
-
-.form-stack {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  max-width: 380px;
+  border-radius: 14px;
+  border: 3px solid #cfd6ff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
+  padding: 18px 18px 16px 18px;
+  text-align: center;
 }
-.input-group-nx {
+.auth-card .title {
+  margin: 2px 0 10px 0;
+  font-size: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+.auth-card .subtitle {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: .95;
+}
+.auth-card .input-group-nx {
   background: #4a91fe;
   display: flex;
   align-items: center;
-  padding: 10px;
+  justify-content: center;
+  padding: 6px 8px;
   border-radius: 10px;
-  border: 3px solid #000;
+  border: 2px solid #000;
   width: 90%;
+  max-width: 300px;
   gap: 8px;
+  margin: 6px auto;
 }
-.input-group-nx span {
-  font-size: 20px;
+.auth-card .input-group-nx span {
+  font-size: 16px;
   color: var(--azul);
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
 }
-.input-group-nx input {
+.auth-card .input-group-nx input {
   border: 2px solid #000;
   outline: none;
   width: 100%;
-  font-size: 18px;
-  padding: 6px 8px;
+  font-size: 14px;
+  padding: 4px 6px;
   border-radius: 5px;
-  font-family: 'Times New Roman', Times, serif;
   background: #fff;
   color: #000;
+  height: 28px;
 }
-.btn-nx {
+.auth-card .btn-nx,
+.auth-card input[type="submit"] {
   background: #4CAF50;
-  border: 5px double #000;
+  border: 3px double #000;
   color: #fff;
-  padding: 8px 10px;
-  font-size: 20px;
+  padding: 6px 10px;
+  font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
-  width: 80%;
+  width: 70%;
+  max-width: 240px;
   transition: background .3s ease;
-  font-family: 'Times New Roman', Times, serif;
-  margin-top: 16px;
+  margin: 8px auto;
 }
-.btn-nx:hover { background: #45a049; }
-.link-nx { color: #FFD700; font-size: 18px; margin-top: 10px; text-decoration: none; }
+.auth-card .btn-nx:hover,
+.auth-card input[type="submit"]:hover { background: #45a049; }
+.auth-card .link-nx,
+.auth-card a {
+  color: #FFD700;
+  font-size: 13px;
+  margin-top: 4px;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+/* ================== RECUPERAR / RESTAURAR CONTRASEÑA ================== */
+.recovery-form {
+  background: #031a8a;
+  border: 3px solid #cfd6ff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
+  width: 100%;
+  max-width: 380px;
+  padding: 18px 18px 16px 18px;
+  text-align: center;
+  color: #fff;
+}
+.recovery-form h2 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  text-align: center;
+}
+.recovery-form h1 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  text-align: center;
+  color: #FFD700;
+}
+.recovery-form .input-group-nx {
+  background: #4a91fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 2px solid #000;
+  width: 90%;
+  max-width: 300px;
+  gap: 8px;
+  margin: 6px auto;
+}
+.recovery-form .input-group-nx span {
+  font-size: 16px;
+  color: var(--azul);
+}
+.recovery-form .input-group-nx input {
+  border: 2px solid #000;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: #fff;
+  color: #000;
+  height: 28px;
+}
+.recovery-form .btn-nx,
+.recovery-form input[type="submit"] {
+  background: #4CAF50;
+  border: 3px double #000;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 70%;
+  max-width: 240px;
+  transition: background .3s ease;
+  margin: 8px auto;
+}
+.recovery-form .btn-nx:hover,
+.recovery-form input[type="submit"]:hover { background: #45a049; }
+.recovery-form .link-nx,
+.recovery-form a {
+  color: #FFD700;
+  font-size: 13px;
+  margin-top: 4px;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
 
 /* ================== PRODUCTOS ================== */
 .product-card {
@@ -217,66 +306,6 @@ body {
 }
 .search-input:focus { border-color: #2468db; box-shadow: 0 2px 12px rgba(36,104,219,.15); }
 .page-title { font-size: 2rem; color: var(--azul-3); }
-
-/* ================== CARRITO ================== */
-.total-bordered {
-  border: 3px solid blue;
-  border-radius: 8px;
-  padding: 9px 22px;
-  font-size: 1.4rem;
-  color: black;
-  background: white;
-  margin-right: 18px;
-  font-family: 'Times New Roman', Times, serif;
-  display: inline-block;
-}
-.table-bordered-nx {
-  border-radius: 10px;
-  box-shadow: 0 6px 22px rgba(0,0,80,0.08);
-  border: 2px solid blue;
-}
-
-/* ================== MÉTODO DE PAGO ================== */
-.metodo-pago-card {
-  margin-top: -150px;
-  margin-bottom: -10px;
-  background: #fff;
-  border: 3px solid var(--azul-2);
-  border-radius: 16px;
-  box-shadow: 0 4px 18px rgba(32,69,199,.10);
-  padding: 20px 30px 24px 30px;
-  max-width: 480px;
-  width: 100%;
-}
-.metodo-pago-title {
-  color: var(--azul-2);
-  text-align: center;
-  font-weight: 700;
-  font-size: 2rem;
-  margin: -5px 0 5px 0;
-  font-family: 'Times New Roman', Times, serif;
-}
-
-/* ================== DIRECCIÓN DE ENVÍO ================== */
-.shipping-form-card {
-  margin-top: -170px;
-  background: #fff;
-  border: 3px solid var(--azul-2);
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(32,69,199,.10);
-  padding: 32px 28px 24px 28px;
-  max-width: 520px;
-  width: 100%;
-}
-.shipping-title {
-  margin-top: -20px;
-  color: var(--azul-2);
-  text-align: center;
-  font-weight: 700;
-  font-size: 2rem;
-  margin-bottom: 0;
-  font-family: 'Times New Roman', Times, serif;
-}
 
 /* ================== UTILIDADES ================== */
 .sr-only {
@@ -319,113 +348,4 @@ body {
   .sub-bar {
     font-size: 13px;
   }
-}
-/* ============= AUTH SCREENS COMPACTAS (centradas y bonitas) ============= */
-.auth-screen{
-  /* ocupa alto completo menos header (90px) y footer (40px) */
-  min-height: calc(100vh - 90px - 40px);
-  padding: 20px 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(90deg, #ffffff, #4a91fe);
-}
-
-.auth-card{
-  background: #031a8a; /* azul profundo tipo base buena */
-  color: #fff;
-  width: 100%;
-  max-width: 380px;           /* ancho controlado */
-  border-radius: 14px;
-  border: 3px solid #cfd6ff;  /* borde finito elegante */
-  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
-  padding: 18px 18px 16px 18px;
-}
-
-/* títulos compactos */
-.auth-card .title{
-  margin: 2px 0 10px 0;
-  font-size: 20px;
-  text-align: center;
-  font-weight: 700;
-}
-.auth-card .subtitle{
-  margin: 0 0 12px 0;
-  font-size: 13px;
-  text-align: center;
-  opacity: .95;
-}
-
-/* grupos de entrada compactos y alineados */
-.auth-card .input-group-nx{
-  width: 90%;
-  max-width: 300px;
-  margin: 6px auto 6px auto;
-  padding: 6px 8px;
-  border-width: 2px;
-}
-.auth-card .input-group-nx span{
-  font-size: 16px;
-}
-.auth-card .input-group-nx input{
-  font-size: 14px;
-  padding: 4px 6px;
-  border-width: 2px;
-  height: 28px;
-}
-
-/* botones cortos (no a lo ancho) */
-.auth-card .btn-nx,
-.auth-card input[type="submit"]{
-  width: 70%;
-  max-width: 240px;
-  margin: 8px auto 6px auto;
-  padding: 6px 10px;
-  font-size: 14px;
-  border-width: 3px;
-}
-
-/* links pequeñitos al centro */
-.auth-card .link-nx,
-.auth-card a{
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #FFD700;
-  text-decoration: none;
-  text-align: center;
-}
-
-/* tarjetas de recuperación/restore unificadas */
-.recovery-form{ 
-  background: #031a8a;
-  border: 3px solid #cfd6ff;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
-  width: 100%;
-  max-width: 380px;
-  padding: 16px 18px;
-}
-.recovery-form h2{ margin: 0 0 8px 0; font-size: 18px; text-align:center; }
-.recovery-form h1{ margin: 0 0 12px 0; font-size: 14px; text-align:center; color:#FFD700; }
-.recovery-form input[type="password"],
-.recovery-form input[type="email"],
-.recovery-form input[type="text"]{
-  width: 88%;
-  max-width: 280px;
-  height: 28px;
-  margin: 4px auto;
-  display: block;
-  font-size: 14px;
-  border: 2px solid #000;
-  border-radius: 7px;
-  padding: 4px 6px;
-}
-.recovery-form input[type="submit"],
-.recovery-form .btn-nx{
-  width: 70%;
-  max-width: 240px;
-  margin: 8px auto 4px auto;
-  padding: 6px 10px;
-  font-size: 14px;
-  border-width: 3px;
 }

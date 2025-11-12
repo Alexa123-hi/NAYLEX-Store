@@ -1,106 +1,29 @@
-Restaurarcontraseña.html:
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale= 0.9">
-    <title>Restablecer Contraseña</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
-    <style>
+{% extends "base.html" %}
+{% block title %}Restablecer Contraseña{% endblock %}
+{% block content %}
+<div class="auth-screen">
+  <div class="recovery-form">
+    <h2>💫 Restablecimiento de contraseña para:</h2>
+    <h1>{{ correo }}</h1>
 
-        body {
-            margin: 0;
-            font-family: 'Times New Roman', Times, serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            /* background: linear-gradient(90deg, #1e3c72, #2a5298); */
-            background: linear-gradient(90deg, white, #4a91fe);
-            font-size: 20px;
-            
-        }
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
+          {% for message in messages %}{{ message }}{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-        .recovery-form {
-            background: linear-gradient(145deg, #0000CD, #00008B);
-            padding: 50px 30px;
-            border-radius: 15px;
-            text-align: center;
-            width: 350px;
-            color: white;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
-            border: 10px double white;
-        }
+    <form action="" method="POST" autocomplete="off" novalidate>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label for="nueva_password" class="sr-only">Nueva contraseña</label>
+      <input id="nueva_password" type="password" name="nueva_password" placeholder="Ingrese su nueva contraseña" required>
+      <input type="submit" value="📝 Actualizar contraseña" class="btn-nx">
+    </form>
 
-        .recovery-form h1 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            display: center;
-            margin-bottom: 30px;
-            
-            
-        
-        }
+    <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
+  </div>
+</div>
 
-        .recovery-form h2 {
-            margin-bottom: 20px;
-            font-size: 30px;
-            margin-bottom: 15px;
-            
-        }
-
-        .recovery-form input[type="password"] {
-            width: 90%;
-            padding: 5px;
-            margin-bottom: 10px;
-            border: 4px solid black;
-            border-radius: 8px;
-            font-size: 18px;
-            font-family: 'Times New Roman', Times, serif;
-            margin-bottom: 1px;
-        }
-
-        .recovery-form input[type="submit"] {
-            background-color: #4CAF50;
-            border: 5px double black;
-            color: white;
-            padding: 8px 20px;
-            font-size: 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 80%;
-            transition: background 0.3s;
-            font-family: 'Times New Roman', Times, serif;
-            
-        }
-
-        .recovery-form input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        label {
-            font-size: 20px;
-            color: white;
-            font-weight: bold;
-            display: block;
-            margin-bottom: -15px;
-            
-        }
-
-        
-
-    </style>
-</head>
-<body>
-        
-    <div class="recovery-form">
-        <h2>💫Restablecimiento de contraseña para:</h2>
-        <h1>{{ correo }}</h1>
-        <form action="" method="POST">
-            <label>🔐Nueva contraseña:</label><br>
-            <input type="password" name="nueva_password" placeholder="Ingrese su nueva contraseña" required><br><br>
-            <input type="submit" value="📝Actualizar contraseña">
-        </form>
-    </div>
-</body>
-</html>
+<script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

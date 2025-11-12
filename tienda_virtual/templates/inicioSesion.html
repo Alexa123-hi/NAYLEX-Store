@@ -1,42 +1,45 @@
-{% extends 'base.html' %}
-{% block title %}NAYLEX Store - Inicio de Sesión{% endblock %}
+{% extends "base.html" %}
+{% block title %}Inicio de Sesión{% endblock %}
 {% block content %}
-<div class="page-gradient">
-  <div class="sidebar">
-    <div class="header">
-      <h1 class="header-title">Inicio de Sesión</h1>
-      <h2 class="header-sub">NAYLEX Store</h2>
-    </div>
+<div class="auth-screen">
+  <div class="auth-card">
+    <div class="title">Inicio de Sesión</div>
+    <div class="subtitle">NAYLEX Store</div>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-info">
+        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
           {% for message in messages %}{{ message }}{% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('inicioSesion') }}" method="POST" class="form-stack" autocomplete="off">
+    <form method="POST" action="{{ url_for('inicioSesion') }}" autocomplete="off" novalidate>
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
       <div class="input-group-nx">
-        <span>👥</span>
-        <input type="text" id="nombreUsuario" name="nombreUsuario" placeholder="Usuario" required>
+        <span aria-hidden="true">👥</span>
+        <input type="text" name="nombreUsuario" placeholder="Usuario" required>
       </div>
+
       <div class="input-group-nx">
-        <span>🔐</span>
-        <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required>
+        <span aria-hidden="true">🔒</span>
+        <input type="password" name="contrasena" placeholder="Contraseña" required>
       </div>
-      <button type="submit" class="btn-nx">🌅 Iniciar Sesión 🌅</button>
+
+      <button type="submit" class="btn-nx">Iniciar Sesión</button>
     </form>
 
-    <div style="margin-top:7px; width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;">
-      <form action="{{ url_for('registro_usuario') }}" method="GET" class="form-stack" style="gap:0;width:80%;">
-        <button type="submit" class="btn-nx" style="background:#2196F3;">📲 Registrarse 📲</button>
-      </form>
-      <a href="{{ url_for('recuperar_contrasena') }}" class="link-nx">¿Olvidaste tu contraseña?</a>
-      <a href="{{ url_for('perfil_bp.reactivar_cuenta') }}" class="link-nx">¿Quieres reactivar tu cuenta?</a>
+    <a class="link-nx" href="{{ url_for('registro_usuario') }}">Registrarse</a>
+    <div style="margin-top:4px;">
+      <a class="link-nx" href="{{ url_for('recuperar_contrasena') }}">¿Olvidaste tu contraseña?</a>
+      {% if url_for('perfil_bp.reactivar_cuenta', _external=False) is not none %}
+        <span style="color:#89a3ff"> | </span>
+        <a class="link-nx" href="{{ url_for('perfil_bp.reactivar_cuenta') }}">¿Quieres reactivar tu cuenta?</a>
+      {% endif %}
     </div>
   </div>
 </div>
-<div class="sub-bar"><h2 style="margin:0;">Querido usuario, esperamos que disfrute de la Tienda Virtual NAYLEX STORE</h2></div>
+
+<script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

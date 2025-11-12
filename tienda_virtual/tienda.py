@@ -105,11 +105,14 @@ def security_ctx():
 
 # --- Desactivar caché para vistas autenticadas ---
 @app.after_request
-def no_cache_for_authenticated(resp):
-    if "usuario_id" in session:
-        resp.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-        resp.headers.setdefault("Pragma", "no-cache")
-        resp.headers.setdefault("Expires", "0")
+def add_security_headers(resp):
+    # HSTS incluso detrás de proxy/CDN
+    resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+
+    # No cachear páginas (tanto anónimas como autenticadas)
+    resp.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+    resp.headers.setdefault("Pragma", "no-cache")
+    resp.headers.setdefault("Expires", "0")
     return resp
 
 # -------------------------------------------------------------------------

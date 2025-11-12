@@ -1,157 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reactivar Cuenta - Naylex Store</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Times New Roman', Times, serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(90deg, white, #4a91fe);
-        }
-
-        .recovery-form {
-            background: linear-gradient(145deg, #0000CD, #00008B);
-            padding: 40px 30px;
-            border-radius: 15px;
-            text-align: center;
-            width: 350px;
-            color: white;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
-            border: 10px double white;
-        }
-
-        .recovery-form h2 {
-            margin-bottom: 20px;
-            font-size: 30px;
-        }
-
-        .recovery-form h1 {
-            margin-bottom: 20px;
-            margin-top: 15px;
-            color: #FFD700;
-            font-size: 18px;
-        }
-
-        .alert {
-            font-size: 20px;
-            color: red;
-            background-color: rgba(0,0,0,0.2);
-            padding: 8px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .input-group {
-            background: #4a91fe;
-            display: flex;
-            align-items: center;
-            padding: 2px;
-            border-radius: 10px;
-            width: 95%;
-            margin-top: 8px;
-            border: 3px solid black;
-        }
-        .input-group:first-child {
-            margin-top: 0;
-        }
-        .input-group span {
-            font-size: 22px;
-            margin-right: 10px;
-        }
-        .input-group input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 18px;
-            border-radius: 5px;
-            font-family: 'Times New Roman', Times, serif;
-            border: 3px solid black;
-            padding: 7px 8px;
-            margin: 0;
-        }
-
-        .recovery-form input[type="submit"] {
-            background-color: #4CAF50;
-            border: 5px double black;
-            color: white;
-            padding: 8px 20px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 90%;
-            transition: background 0.3s;
-            margin-top: 14px;  /* Solo separa el botón del último campo */
-        }
-
-        .recovery-form input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        .recovery-form a {
-            display: block;
-            margin-top: 15px;
-            color: #FFD700;
-            text-decoration: none;
-            font-size: 18px;
-        }
-
-    </style>
-</head>
-<body>
-
-<div class="recovery-form">
-    <h2>💡Reactivar Cuenta</h2>
-    <h1>Ingresa cualquiera de tus datos registrados para reactivar tu cuenta</h1>
+{% extends "base.html" %}
+{% block title %}Reactivar Cuenta{% endblock %}
+{% block content %}
+<div class="auth-screen">
+  <div class="auth-card">
+    <div class="title">💡 Reactivar Cuenta</div>
+    <div class="subtitle">Ingresa cualquiera de tus datos registrados</div>
 
     {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div id="mensaje-flash" class="alert">
-            {% for message in messages %}
-            {{ message }}
-            {% endfor %}
+      {% if messages %}
+        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
+          {% for message in messages %}{{ message }}{% endfor %}
         </div>
-        {% endif %}
+      {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('perfil_bp.reactivar_cuenta') }}" method="POST">
-        <div class="input-group">
-            <span>👥</span>
-            <input type="text" name="username" placeholder="Usuario">
-        </div>
-        <div class="input-group">
-            <span>🪪</span>
-            <input type="text" name="cc" placeholder="Cédula">
-        </div>
-        <div class="input-group">
-            <span>📱</span>
-            <input type="text" name="telefono" placeholder="Teléfono">
-        </div>
-        <div class="input-group">
-            <span>📧</span>
-            <input type="email" name="correo" placeholder="Correo electrónico">
-        </div>
-        <input type="submit" value="🔓Reactivar cuenta" class="btn btn-outline-danger w-100">
+    <form method="POST" action="{{ url_for('perfil_bp.reactivar_cuenta') }}" autocomplete="off" novalidate>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
+      <div class="input-group-nx">
+        <span aria-hidden="true">👥</span>
+        <input type="text" name="username" placeholder="Usuario">
+      </div>
+      <div class="input-group-nx">
+        <span aria-hidden="true">🆔</span>
+        <input type="text" name="cc" placeholder="Cédula">
+      </div>
+      <div class="input-group-nx">
+        <span aria-hidden="true">📞</span>
+        <input type="text" name="telefono" placeholder="Teléfono">
+      </div>
+      <div class="input-group-nx">
+        <span aria-hidden="true">📧</span>
+        <input type="email" name="correo" placeholder="Correo electrónico">
+      </div>
+
+      <button type="submit" class="btn-nx">🔁 Reactivar cuenta</button>
     </form>
-    <a href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
+
+    <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
+  </div>
 </div>
 
-<script> //duración de los mensajes flash
-    setTimeout(function() {
-        var mensaje = document.getElementById('mensaje-flash');
-        if (mensaje) {
-            mensaje.style.display = 'none';
-        }
-    }, 4500);
-</script>
-
-</body>
-</html>
+<script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

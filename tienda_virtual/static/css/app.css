@@ -320,4 +320,112 @@ body {
     font-size: 13px;
   }
 }
-/* ================== FIN CSS ================== */
+/* ============= AUTH SCREENS COMPACTAS (centradas y bonitas) ============= */
+.auth-screen{
+  /* ocupa alto completo menos header (90px) y footer (40px) */
+  min-height: calc(100vh - 90px - 40px);
+  padding: 20px 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(90deg, #ffffff, #4a91fe);
+}
+
+.auth-card{
+  background: #031a8a; /* azul profundo tipo base buena */
+  color: #fff;
+  width: 100%;
+  max-width: 380px;           /* ancho controlado */
+  border-radius: 14px;
+  border: 3px solid #cfd6ff;  /* borde finito elegante */
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
+  padding: 18px 18px 16px 18px;
+}
+
+/* títulos compactos */
+.auth-card .title{
+  margin: 2px 0 10px 0;
+  font-size: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+.auth-card .subtitle{
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: .95;
+}
+
+/* grupos de entrada compactos y alineados */
+.auth-card .input-group-nx{
+  width: 90%;
+  max-width: 300px;
+  margin: 6px auto 6px auto;
+  padding: 6px 8px;
+  border-width: 2px;
+}
+.auth-card .input-group-nx span{
+  font-size: 16px;
+}
+.auth-card .input-group-nx input{
+  font-size: 14px;
+  padding: 4px 6px;
+  border-width: 2px;
+  height: 28px;
+}
+
+/* botones cortos (no a lo ancho) */
+.auth-card .btn-nx,
+.auth-card input[type="submit"]{
+  width: 70%;
+  max-width: 240px;
+  margin: 8px auto 6px auto;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-width: 3px;
+}
+
+/* links pequeñitos al centro */
+.auth-card .link-nx,
+.auth-card a{
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #FFD700;
+  text-decoration: none;
+  text-align: center;
+}
+
+/* tarjetas de recuperación/restore unificadas */
+.recovery-form{ 
+  background: #031a8a;
+  border: 3px solid #cfd6ff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
+  width: 100%;
+  max-width: 380px;
+  padding: 16px 18px;
+}
+.recovery-form h2{ margin: 0 0 8px 0; font-size: 18px; text-align:center; }
+.recovery-form h1{ margin: 0 0 12px 0; font-size: 14px; text-align:center; color:#FFD700; }
+.recovery-form input[type="password"],
+.recovery-form input[type="email"],
+.recovery-form input[type="text"]{
+  width: 88%;
+  max-width: 280px;
+  height: 28px;
+  margin: 4px auto;
+  display: block;
+  font-size: 14px;
+  border: 2px solid #000;
+  border-radius: 7px;
+  padding: 4px 6px;
+}
+.recovery-form input[type="submit"],
+.recovery-form .btn-nx{
+  width: 70%;
+  max-width: 240px;
+  margin: 8px auto 4px auto;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-width: 3px;
+}

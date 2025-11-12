@@ -1,3 +1,6 @@
+from werkzeug.security import check_password_hash
+
+
 # ----------------------------------------
 # Patrón INTERPRETER para validación de login
 # ----------------------------------------
@@ -30,7 +33,10 @@ class ContraseñaCorrecta(Expresion):
     def interpretar(self, contexto):
         if not contexto.usuario:
             return False
-        return contexto.usuario.password == contexto.password_introducido
+        try:
+            return check_password_hash(contexto.usuario.password, contexto.password_introducido)
+        except Exception:
+            return contexto.usuario.password == contexto.password_introducido
 
 
 class UsuarioActivo(Expresion):

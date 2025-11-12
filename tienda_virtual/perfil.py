@@ -6,9 +6,6 @@ from tienda_virtual.models import db, Persona, Usuario
 
 perfil_bp = Blueprint('perfil_bp', __name__)
 
-# -------------------------------------------------------------------
-# PERFIL: VER Y ACTUALIZAR DATOS
-# -------------------------------------------------------------------
 @perfil_bp.route('/perfil', methods=['GET', 'POST'])
 def perfil():
     id_usuario = session.get('usuario_id')
@@ -17,7 +14,15 @@ def perfil():
         return redirect(url_for('inicioSesion'))
 
     usuario = Usuario.query.get(id_usuario)
+    if not usuario:
+        flash("El usuario no fue encontrado en el sistema.", "danger")
+        session.clear()
+        return redirect(url_for('inicioSesion'))
+
     persona = Persona.query.get(usuario.id_persona)
+    if not persona:
+        flash("No se encontró información personal asociada a este usuario.", "danger")
+        return redirect(url_for('inicio'))
 
     if request.method == 'POST':
         # Capturar campos actualizados
@@ -54,8 +59,8 @@ def perfil():
 
         return redirect(url_for('perfil_bp.perfil'))
 
-    # Renderizar perfil con datos actuales
     return render_template('perfil.html', persona=persona, usuario=usuario)
+
 
 # -------------------------------------------------------------------
 # INACTIVAR CUENTA

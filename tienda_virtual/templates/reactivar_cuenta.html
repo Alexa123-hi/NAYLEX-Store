@@ -1,29 +1,116 @@
 {% extends "base.html" %}
 {% block title %}Reactivar Cuenta{% endblock %}
 {% block content %}
-<div class="auth-screen">
-  <div class="auth-card">
-    <div class="title">💡 Reactivar Cuenta</div>
-    <div class="subtitle">Ingresa cualquiera de tus datos registrados</div>
 
-    {% with messages = get_flashed_messages() %}
+<div class="auth-screen">
+  <div class="auth-card perfil-card">
+    <h2 class="title">♻️ Reactivar Cuenta</h2>
+    <p class="subtitle">Ingresa tus datos para reactivar tu cuenta</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div id="mensaje-flash" class="alert alert-warning" style="text-align:center">
-          {% for message in messages %}{{ message }}{% endfor %}
-        </div>
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="text-align:center">{{ message }}</div>
+        {% endfor %}
       {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('perfil_bp.reactivar_cuenta') }}" autocomplete="off" novalidate>
+    <form method="POST" action="{{ url_for('perfil_bp.reactivar_cuenta') }}" autocomplete="off">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-      <div class="input-group-nx"><span>👥</span><input name="username" placeholder="Usuario"></div>
-      <div class="input-group-nx"><span>🆔</span><input name="cc" placeholder="Cédula"></div>
-      <div class="input-group-nx"><span>📞</span><input name="telefono" placeholder="Teléfono"></div>
-      <div class="input-group-nx"><span>📧</span><input name="correo" placeholder="Correo electrónico"></div>
-      <button type="submit" class="btn-nx">🔁 Reactivar cuenta</button>
-    </form>
 
-    <a class="link-nx" href="{{ url_for('inicioSesion') }}">Volver al inicio de sesión</a>
+      <div class="input-group-nx">
+        <label for="username">Nombre de usuario:</label>
+        <input type="text" id="username" name="username" placeholder="Tu nombre de usuario">
+      </div>
+
+      <div class="input-group-nx">
+        <label for="cc">Cédula:</label>
+        <input type="text" id="cc" name="cc" pattern="[0-9]*" inputmode="numeric" placeholder="Número de cédula">
+      </div>
+
+      <div class="input-group-nx">
+        <label for="correo">Correo:</label>
+        <input type="email" id="correo" name="correo" placeholder="correo@ejemplo.com">
+      </div>
+
+      <div class="input-group-nx">
+        <label for="telefono">Teléfono:</label>
+        <input type="text" id="telefono" name="telefono" pattern="[0-9]*" inputmode="numeric" placeholder="Número de teléfono">
+      </div>
+
+      <button type="submit" class="btn-nx">✅ Reactivar Cuenta</button>
+      <a href="{{ url_for('inicioSesion') }}" class="btn-nx secondary">⬅️ Volver al inicio</a>
+    </form>
   </div>
 </div>
+
+<style>
+.auth-screen {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #004d00, #00b300);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+.perfil-card {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid #80ff80;
+  color: white;
+  width: 95%;
+  max-width: 600px;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+.title {
+  font-size: 26px;
+  color: #c6ffb3;
+  text-align: center;
+}
+.subtitle {
+  text-align: center;
+  color: #e6ffe6;
+  margin-bottom: 20px;
+}
+.input-group-nx {
+  margin-bottom: 15px;
+}
+.input-group-nx label {
+  display: block;
+  color: #ccffcc;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.input-group-nx input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #99ff99;
+  background: #fff;
+  color: #000;
+}
+.input-group-nx input:focus {
+  border-color: #00ff99;
+  box-shadow: 0 0 6px #00ff99;
+}
+.btn-nx {
+  background-color: #00cc66;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 10px;
+}
+.btn-nx:hover { background-color: #00994d; }
+.btn-nx.secondary {
+  background-color: transparent;
+  border: 2px solid #80ff80;
+  color: #ccffcc;
+}
+.btn-nx.secondary:hover { background-color: rgba(0,255,128,0.2); }
+</style>
+
 {% endblock %}

@@ -10,19 +10,17 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
+          <div class="alert alert-{{ category }}" style="text-align:center">{{ message }}</div>
         {% endfor %}
       {% endif %}
     {% endwith %}
 
     <form method="POST" action="{{ url_for('restaurar_contrasena', token=request.view_args.token) }}" autocomplete="off">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
       <div class="input-group-nx">
-        <label for="nueva_password">Nueva Contraseña</label>
+        <label for="nueva_password">Nueva Contraseña:</label>
         <input type="password" id="nueva_password" name="nueva_password" minlength="6" required placeholder="Mínimo 6 caracteres">
       </div>
-
       <button type="submit" class="btn-nx">🔑 Actualizar Contraseña</button>
       <a href="{{ url_for('inicioSesion') }}" class="btn-nx secondary">⬅️ Volver al inicio</a>
     </form>
@@ -32,27 +30,26 @@
 <style>
 .auth-screen {
   min-height: 100vh;
-  background: linear-gradient(135deg, #004d00, #00994d);
+  background: linear-gradient(135deg, #004d00, #00b300);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 30px;
 }
 .perfil-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid #66ff99;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid #80ff80;
   color: white;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 14px;
-  padding: 28px 24px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  width: 95%;
+  max-width: 600px;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 .title {
   font-size: 26px;
-  color: #ccffcc;
+  color: #c6ffb3;
   text-align: center;
-  margin-bottom: 5px;
 }
 .subtitle {
   text-align: center;
@@ -64,18 +61,17 @@
 }
 .input-group-nx label {
   display: block;
-  font-weight: 600;
-  color: #d9ffd9;
-  margin-bottom: 6px;
+  color: #ccffcc;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 .input-group-nx input {
   width: 100%;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #99ff99;
-  outline: none;
-  background: rgba(255,255,255,0.9);
-  color: #003300;
+  background: #fff;
+  color: #000;
 }
 .input-group-nx input:focus {
   border-color: #00ff99;
@@ -83,32 +79,21 @@
 }
 .btn-nx {
   background-color: #00cc66;
-  color: white;
-  font-weight: bold;
   border: none;
   border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
-  transition: 0.3s;
+  padding: 10px 18px;
+  color: white;
+  font-weight: bold;
   width: 100%;
   margin-top: 10px;
 }
-.btn-nx:hover {
-  background-color: #00994d;
-}
+.btn-nx:hover { background-color: #00994d; }
 .btn-nx.secondary {
   background-color: transparent;
   border: 2px solid #80ff80;
   color: #ccffcc;
 }
-.btn-nx.secondary:hover {
-  background-color: rgba(0, 255, 128, 0.2);
-}
-.alert {
-  margin: 10px 0;
-  padding: 8px;
-  border-radius: 6px;
-  text-align: center;
-}
+.btn-nx.secondary:hover { background-color: rgba(0,255,128,0.2); }
 </style>
+
 {% endblock %}

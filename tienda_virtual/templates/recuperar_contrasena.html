@@ -1,124 +1,120 @@
 {% extends "base.html" %}
-{% block title %}Recuperar Contraseña{% endblock %}
+{% block title %}Mi Perfil{% endblock %}
 {% block content %}
 
-<div class="auth-screen">
+<div class="auth-screen perfil-screen">
   <div class="auth-card perfil-card">
-    <h2 class="title">🔑 Recuperar Contraseña</h2>
-    <p class="subtitle">Ingresa alguno de tus datos para enviar las instrucciones</p>
+    <h2 class="title">👤 Perfil de Usuario</h2>
+    <p class="subtitle">Actualiza tus datos personales</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
+          <div class="alert alert-{{ category }}" style="text-align:center">{{ message }}</div>
         {% endfor %}
       {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('recuperar_contrasena') }}" autocomplete="off" novalidate>
+    <form method="POST" action="{{ url_for('perfil_bp.perfil') }}" autocomplete="off">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
       <div class="input-group-nx">
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo" name="correo" placeholder="correo@ejemplo.com" title="Introduce un correo válido">
+        <label for="cc">Cédula:</label>
+        <input type="text" id="cc" name="cc" value="{{ persona.cc or '' }}" pattern="[0-9]*" inputmode="numeric" title="Solo números">
       </div>
 
       <div class="input-group-nx">
-        <label for="username">Nombre de usuario</label>
-        <input type="text" id="username" name="username" pattern="[A-Za-z0-9_]+" title="Solo letras, números o guiones bajos" placeholder="Tu nombre de usuario">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ persona.nombre or '' }}" pattern="[A-Za-zÀ-ÿ\s]+" title="Solo letras">
       </div>
 
       <div class="input-group-nx">
-        <label for="telefono">Teléfono</label>
-        <input type="text" id="telefono" name="telefono" inputmode="numeric" pattern="[0-9]*" title="Solo números" placeholder="Número de teléfono">
+        <label for="apellido">Apellido:</label>
+        <input type="text" id="apellido" name="apellido" value="{{ persona.apellido or '' }}" pattern="[A-Za-zÀ-ÿ\s]+" title="Solo letras">
       </div>
 
-      <button type="submit" class="btn-nx">📬 Enviar Instrucciones</button>
-      <a href="{{ url_for('inicioSesion') }}" class="btn-nx secondary">⬅️ Volver al inicio</a>
+      <div class="input-group-nx">
+        <label for="correo">Correo:</label>
+        <input type="email" id="correo" name="correo" value="{{ persona.correo or '' }}">
+      </div>
+
+      <div class="input-group-nx">
+        <label for="telefono">Teléfono:</label>
+        <input type="text" id="telefono" name="telefono" value="{{ persona.telefono or '' }}" pattern="[0-9]*" inputmode="numeric">
+      </div>
+
+      <div class="input-group-nx">
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion" value="{{ persona.direccion or '' }}">
+      </div>
+
+      <button type="submit" class="btn-nx">💾 Guardar Cambios</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('perfil_bp.inactivar_cuenta') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-nx secondary">🚫 Inactivar Cuenta</button>
     </form>
   </div>
 </div>
 
 <style>
-.auth-screen {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #004d00, #00994d);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+.perfil-screen {
+  background: linear-gradient(135deg, #004d00, #00b300);
+  padding: 40px 10px;
 }
 .perfil-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid #66ff99;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #80ff80;
   color: white;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 14px;
-  padding: 28px 24px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  width: 95%;
+  max-width: 650px;
+  border-radius: 15px;
+  padding: 35px 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
-.title {
+.perfil-card .title {
   font-size: 26px;
-  color: #ccffcc;
+  color: #c6ffb3;
   text-align: center;
-  margin-bottom: 5px;
 }
-.subtitle {
+.perfil-card .subtitle {
   text-align: center;
   color: #e6ffe6;
   margin-bottom: 20px;
 }
 .input-group-nx {
   margin-bottom: 15px;
+  text-align: left;
 }
 .input-group-nx label {
+  font-weight: bold;
+  color: #ccffcc;
+  margin-bottom: 5px;
   display: block;
-  font-weight: 600;
-  color: #d9ffd9;
-  margin-bottom: 6px;
 }
 .input-group-nx input {
   width: 100%;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #99ff99;
+  background: #fff;
+  color: #000;
   outline: none;
-  background: rgba(255,255,255,0.9);
-  color: #003300;
 }
 .input-group-nx input:focus {
   border-color: #00ff99;
   box-shadow: 0 0 6px #00ff99;
 }
-.btn-nx {
-  background-color: #00cc66;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
-  transition: 0.3s;
-  width: 100%;
-  margin-top: 10px;
-}
-.btn-nx:hover {
-  background-color: #00994d;
-}
 .btn-nx.secondary {
   background-color: transparent;
-  border: 2px solid #80ff80;
-  color: #ccffcc;
+  border: 2px solid #ffb3b3;
+  color: #ffcccc;
+  width: 100%;
 }
 .btn-nx.secondary:hover {
-  background-color: rgba(0, 255, 128, 0.2);
-}
-.alert {
-  margin: 10px 0;
-  padding: 8px;
-  border-radius: 6px;
-  text-align: center;
+  background-color: rgba(255, 100, 100, 0.2);
 }
 </style>
+
 {% endblock %}

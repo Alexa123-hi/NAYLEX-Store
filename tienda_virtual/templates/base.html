@@ -6,13 +6,13 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ CSS GLOBAL DE LA TIENDA (sin dependencias externas) -->
+  <!-- ✅ CSS GLOBAL -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 
 <body class="{% if hide_navbar %}no-navbar{% endif %}">
 
-  <!-- ✅ NAVBAR solo visible si NO está en pantalla de autenticación -->
+  <!-- ✅ NAVBAR (solo si no es vista de autenticación) -->
   {% if not hide_navbar %}
   <header class="sidebar">
     <h2 class="store-title">NAYLEX<br>STORE</h2>
@@ -21,8 +21,8 @@
       <a href="{{ url_for('inicio') }}">🌅Inicio</a>
       <a href="{{ url_for('productos_bp.productos') }}">🚜Productos</a>
       <a href="{{ url_for('compras_bp.mis_pedidos') }}">🛍️Pedidos</a>
-      <a href="{{ url_for('cerrar_Sesion') }}">🚫Cerrar sesión</a>
       <a href="{{ url_for('perfil_bp.perfil') }}">👤Perfil</a>
+      <a href="{{ url_for('cerrar_Sesion') }}">🚫Cerrar sesión</a>
     </nav>
 
     <div class="sidebar-space"></div>
@@ -34,7 +34,7 @@
     {% endif %}
 
     <a href="{{ url_for('carrito_compras_bp.carrito') }}" class="carrito-link">
-      Carrito 🛒
+      🛒 Carrito
       {% if session.get('carrito') %}
         <span class="cart-count">{{ session['carrito']|length }}</span>
       {% endif %}
@@ -47,14 +47,14 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- ✅ FOOTER solo visible si NO está en pantalla de autenticación -->
+  <!-- ✅ FOOTER (solo si no es vista de autenticación) -->
   {% if not hide_navbar %}
   <footer class="sub-bar">
     <h2>Tienda Virtual del Sistema de Inventario TechSolutions</h2>
   </footer>
   {% endif %}
 
-  <!-- ✅ JS GLOBAL DE LA TIENDA (protegido con nonce y CSP) -->
+  <!-- ✅ JS GLOBAL -->
   <script nonce="{{ csp_nonce() }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

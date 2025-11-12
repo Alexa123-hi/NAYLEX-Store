@@ -424,7 +424,7 @@ def registro_usuario():
             print("❌ Error en registro:", e)
             flash("Ocurrió un error durante el registro.", "danger")
 
-         return render_template("registro_usuario.html", datos_anteriores={})
+    return render_template("registro_usuario.html", datos_anteriores={})
 
 
 

@@ -9,6 +9,11 @@ import time
 import io
 import os
 
+# 👇 Importamos los estados para usar el patrón State en endpoints
+from tienda_virtual.pedido_states import (
+    PendienteState, ProcesadoState, EnviadoState, EntregadoState, CanceladoState
+)
+
 compras_bp = Blueprint('compras_bp', __name__)
 
 @compras_bp.route('/compra', methods=['GET'])
@@ -276,8 +281,6 @@ def confirmar_pago(id_pedido):
 
     return render_template('confirmacion.html', mensaje=mensaje, id_pedido=pedido.id_pedido)
 
-
-
 @compras_bp.route('/estado_pedido/<int:id_pedido>/<estado>') #cambio del estado del pedido
 def estado_pedido(id_pedido, estado):
     pedido = Pedido.query.get(id_pedido)
@@ -390,22 +393,37 @@ def detalle_pedido(id_pedido):
         total_general=subtotal_general + iva_total
     ) #datos que se mostraran en el template
 
+#------------------------------CAMBIO DE ESTADO DEL PEDIDO CON LOS BOTONES (usa State)----------------------
+def _state_instance_from_db(pedido):
+    """
+    Devuelve la instancia de State según el estado textual en BD.
+    Si no hay relación/estado, cae en PendienteState.
+    """
+    nombre = None
+    try:
+        nombre = pedido.estado_pedido.estado  # requiere relación ORM
+    except Exception:
+        pass
+    mapping = {
+        'Pendiente': PendienteState(),
+        'Procesado': ProcesadoState(),
+        'Enviado': EnviadoState(),
+        'Entregado': EntregadoState(),
+        'Cancelado': CanceladoState(),
+    }
+    return mapping.get(nombre, PendienteState())
 
-#------------------------------CAMBIO DE ESTADO DEL PEDIDO CON LOS BOTONES----------------------------------
 @compras_bp.route('/pedido_recibido/<int:id_pedido>', methods=['POST'])
 def pedido_recibido(id_pedido):
     pedido = Pedido.query.get(id_pedido)
     if not pedido:
         flash("Pedido no encontrado.", "danger")
         return redirect(url_for('compras_bp.mis_pedidos'))
-    if pedido.id_estado_pedido == 4:
-        flash("El pedido ya está entregado.", "info")
-    else:
-        pedido.id_estado_pedido = 4  # 4 = entregado
-        db.session.commit()
-        flash("¡Pedido marcado como recibido!", "success")
-    return redirect(url_for('compras_bp.detalle_pedido', id_pedido=id_pedido))
 
+    # Patrón State:
+    estado = _state_instance_from_db(pedido)
+    estado.marcar_recibido(pedido)
+    return redirect(url_for('compras_bp.detalle_pedido', id_pedido=id_pedido))
 
 @compras_bp.route('/pedido_cancelar/<int:id_pedido>', methods=['POST'])
 def pedido_cancelar(id_pedido):
@@ -414,17 +432,12 @@ def pedido_cancelar(id_pedido):
         flash("Pedido no encontrado.", "danger")
         return redirect(url_for('compras_bp.mis_pedidos'))
 
-    if pedido.id_estado_pedido in [2, 3, 4]:
-        flash("No se puede cancelar un pedido que ya está procesado, enviado o entregado.", "warning")
-        return redirect(url_for('compras_bp.detalle_pedido', id_pedido=id_pedido))
-
-    pedido.id_estado_pedido = 5  # 5 = Cancelado
-    db.session.commit()
-    flash("Pedido cancelado con éxito, se ha devuelto el dinero.", "success")
+    # Patrón State:
+    estado = _state_instance_from_db(pedido)
+    estado.cancelar(pedido)
     return redirect(url_for('compras_bp.detalle_pedido', id_pedido=id_pedido))
 
-
-#-------------------------------------------------Factura De Pago----------------------------------------------
+#-------------------------------------------------Factura De Pago (Builder/Strategy/Singleton)---------------
 @compras_bp.route('/factura/<int:id_pedido>')
 def factura(id_pedido):
     from tienda_virtual.models import Pedido, Detalle_Pedido, Cliente, Persona, Proveedor, Producto, Producto_Proveedor, Metodo_Pago
@@ -435,7 +448,7 @@ def factura(id_pedido):
     from flask import current_app, send_file, flash, redirect, url_for
 
     # ==========================================================
-    # SINGLETON: Configuración total del PDF (reutilizable) - una sola configuración para facturas
+    # SINGLETON: Configuración total del PDF (reutilizable)
     # ==========================================================
     class ConfiguracionFactura:
         _instancia = None
@@ -451,7 +464,7 @@ def factura(id_pedido):
             return cls._instancia
 
     # ==========================================================
-    # STRATEGY: Cálculo de IVA (se puede cambiar) - Intercambiar forma de calcular iva , agregar nuevas clases con nuevos ivas
+    # STRATEGY: Cálculo de IVA
     # ==========================================================
     class IVAStrategy:
         def calcular(self, subtotal: float) -> float:
@@ -466,7 +479,7 @@ def factura(id_pedido):
             return 0.0
 
     # ==========================================================
-    # BUILDER: Construcción paso a paso de la factura PDF - Logica de construcción del PDF/controlador de Flask
+    # BUILDER: Construcción paso a paso de la factura PDF
     # ==========================================================
     class FacturaBuilder:
         def __init__(self, pedido, detalles):

@@ -19,7 +19,7 @@ from tienda_virtual.Compras import compras_bp
 from tienda_virtual.perfil import perfil_bp
 from tienda_virtual.models import Persona, Usuario, Cliente
 from tienda_virtual.login_interpreter import (
-    Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido
+    Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, LoginValido
 )
 from tienda_virtual.email_sender import enviar_correo  # 📩 Integración Brevo
 
@@ -118,7 +118,7 @@ def _csrf_protect_hook():
 app.jinja_env.globals["csrf_token"] = _get_csrf_token
 
 # -------------------------------------------------------------------------
-# INICIO DE SESIÓN (corregido con check_password_hash)
+# INICIO DE SESIÓN (con patrón Interpreter)
 # -------------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
@@ -132,22 +132,19 @@ def inicioSesion():
 
         usuario = Usuario.query.filter_by(username=username).first()
 
-        # Validar existencia
-        if not usuario:
+        # Patrón Interpreter: combinamos reglas de validación
+        reglas = LoginValido(
+            UsuarioExiste(),
+            ContraseñaCorrecta(),   # soporta hash y texto plano de forma compatible
+            UsuarioActivo()
+        )
+        contexto = Contexto(usuario=usuario, password_introducido=password)
+
+        if not reglas.interpretar(contexto):
             flash("Credenciales incorrectas o usuario inactivo.", "danger")
             return render_template("inicioSesion.html", hide_navbar=True)
 
-        # Verificar contraseña (hash o texto plano para compatibilidad)
-        if not (usuario.password == password or check_password_hash(usuario.password, password)):
-            flash("Credenciales incorrectas o usuario inactivo.", "danger")
-            return render_template("inicioSesion.html", hide_navbar=True)
-
-        # Verificar estado activo
-        if getattr(usuario, "id_estado_usuario", 1) != 1:
-            flash("Tu cuenta está inactiva. Contacta con el administrador.", "warning")
-            return render_template("inicioSesion.html", hide_navbar=True)
-
-        # Crear sesión
+        # Crear sesión (igual que antes)
         session.clear()
         session["usuario_id"] = usuario.id_usuario
         session["usuario_nombre"] = usuario.username

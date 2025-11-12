@@ -37,14 +37,12 @@ body {
   width: 100%;
   flex-wrap: wrap;
 }
-
 .store-title {
   margin-right: 60px;
   font-size: 26px;
   text-align: center;
   font-weight: bold;
 }
-
 .nav-links a {
   color: white;
   margin-right: 25px;
@@ -54,9 +52,7 @@ body {
   transition: color 0.3s;
 }
 .nav-links a:hover { color: #dddddd; }
-
 .sidebar-space { flex-grow: 1; }
-
 .welcome-badge {
   background: #ceff39;
   color: #131313;
@@ -65,9 +61,7 @@ body {
   border-radius: 7px;
   margin-left: 18px;
   font-size: 22px;
-  font-family: 'Times New Roman', Times, serif;
 }
-
 .carrito-link {
   color: #FFD700;
   font-weight: bold;
@@ -79,7 +73,6 @@ body {
   transition: color 0.3s;
 }
 .carrito-link:hover { color: #fff9c4; }
-
 .cart-count {
   background: #FFD700;
   color: #00008B;
@@ -110,13 +103,17 @@ body {
   margin-bottom: 60px;
 }
 
-/* ================== LOGIN / REGISTRO / AUTH ================== */
+/* ================== FORMULARIOS AUTH ================== */
 .auth-screen {
   min-height: calc(100vh - 40px);
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(90deg, #ffffff, #4a91fe);
+  padding: 0;
+  margin: 0;
 }
+
 .auth-card {
   background: #031a8a;
   color: #fff;
@@ -125,23 +122,26 @@ body {
   border-radius: 14px;
   border: 3px solid #cfd6ff;
   box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
-  padding: 20px 18px;
+  padding: 22px 20px;
   text-align: center;
 }
+
 .auth-card .title {
-  margin: 0 0 10px 0;
-  font-size: 22px;
+  margin: 0 0 8px 0;
+  font-size: 20px;
   font-weight: 700;
 }
 .auth-card .subtitle {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  opacity: .9;
+  font-size: 13px;
+  color: #FFD700;
+  margin-bottom: 10px;
 }
+
 .auth-card .input-group-nx {
   background: #4a91fe;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 6px 8px;
   border-radius: 10px;
   border: 2px solid #000;
@@ -150,6 +150,7 @@ body {
   gap: 8px;
   margin: 6px auto;
 }
+
 .auth-card .input-group-nx span {
   font-size: 16px;
   color: var(--azul);
@@ -165,7 +166,9 @@ body {
   color: #000;
   height: 28px;
 }
-.auth-card .btn-nx {
+
+.auth-card .btn-nx,
+.auth-card input[type="submit"] {
   background: #4CAF50;
   border: 3px double #000;
   color: #fff;
@@ -178,79 +181,32 @@ body {
   transition: background .3s ease;
   margin: 8px auto;
 }
-.auth-card .btn-nx:hover { background: #45a049; }
+.auth-card .btn-nx:hover,
+.auth-card input[type="submit"]:hover { background: #45a049; }
+
 .auth-card a {
   color: #FFD700;
   font-size: 13px;
-  margin-top: 4px;
   text-decoration: none;
   display: inline-block;
+  margin-top: 4px;
 }
 
-/* ================== RECUPERAR / RESTAURAR CONTRASEÑA ================== */
-.recovery-form {
-  background: #031a8a;
-  border: 3px solid #cfd6ff;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 0 0 3px #1a2b9c;
-  width: 100%;
-  max-width: 380px;
-  padding: 20px 18px;
-  text-align: center;
-  color: #fff;
+/* ================== SIN NAVBAR ================== */
+body.no-navbar {
+  background: linear-gradient(90deg, #ffffff, #4a91fe);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
-.recovery-form h2 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-}
-.recovery-form h1 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #FFD700;
-}
-.recovery-form .input-group-nx {
-  background: #4a91fe;
+
+.main-auth {
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 6px 8px;
-  border-radius: 10px;
-  border: 2px solid #000;
-  width: 90%;
-  max-width: 300px;
-  gap: 8px;
-  margin: 6px auto;
-}
-.recovery-form .input-group-nx input {
-  border: 2px solid #000;
-  outline: none;
-  width: 100%;
-  font-size: 14px;
-  padding: 4px 6px;
-  border-radius: 5px;
-  background: #fff;
-  color: #000;
-  height: 28px;
-}
-.recovery-form input[type="submit"] {
-  background: #4CAF50;
-  border: 3px double #000;
-  color: #fff;
-  padding: 6px 10px;
-  font-size: 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  width: 70%;
-  max-width: 240px;
-  transition: background .3s ease;
-  margin: 8px auto;
-}
-.recovery-form input[type="submit"]:hover { background: #45a049; }
-.recovery-form a {
-  color: #FFD700;
-  font-size: 13px;
-  margin-top: 4px;
-  text-decoration: none;
-  display: inline-block;
+  height: calc(100vh - 40px);
+  padding: 0;
+  margin: 0;
 }
 
 /* ================== PRODUCTOS ================== */
@@ -269,27 +225,6 @@ body {
   border-color: #2a44a8;
 }
 .product-title { font-size: 1.3rem; color: var(--azul); font-weight: bold; }
-
-/* ================== UTILIDADES ================== */
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; }
-.hidden { display: none !important; }
-
-/* ================== SIN NAVBAR (LOGIN / REGISTRO / RECUPERAR) ================== */
-body.no-navbar {
-  background: linear-gradient(90deg, #ffffff, #4a91fe);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-.main-auth {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100vh - 40px);
-  padding: 0;
-  margin: 0;
-}
 
 /* ================== RESPONSIVE NAVBAR ================== */
 @media (max-width: 900px) {

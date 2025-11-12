@@ -185,7 +185,8 @@ def inicioSesion():
         flash(f"¡Bienvenido {usuario.username}!", "success")
         return redirect(url_for("inicio"))
 
-    return render_template("inicioSesion.html")
+    return render_template("inicioSesion.html", hide_navbar=True)
+
 
 
 @app.route("/inicio")
@@ -267,7 +268,8 @@ def enviar_instrucciones():
         return redirect(url_for("inicioSesion"))
 
     flash("No se encontró ningún registro con los datos ingresados.")
-    return redirect(url_for("recuperar_contrasena"))
+    return render_template("recuperar_contrasena.html", hide_navbar=True)
+
 
 
 # ---------------------------- RESTAURAR CONTRASEÑA ----------------------------
@@ -295,7 +297,8 @@ def restaurar_contrasena(token):
         else:
             flash("No se pudo actualizar la contraseña.")
 
-    return render_template("restaurar_contrasena.html", correo=correo)
+    return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
+
 
 
 # ---------------------------- REGISTRO DE USUARIOS ----------------------------
@@ -376,7 +379,8 @@ def registro_usuario():
             print("❌ Error en registro:", e)
             flash("Ocurrió un error durante el registro.", "danger")
 
-    return render_template("registro_usuario.html", datos_anteriores={})
+    return render_template("registro_usuario.html", hide_navbar=True, datos_anteriores={})
+
 
 
 # ---------------------------- CERRAR SESIÓN ----------------------------

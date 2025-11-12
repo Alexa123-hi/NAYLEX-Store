@@ -13,7 +13,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 
-<body>
+<body class="{% if hide_navbar %}no-navbar{% endif %}">
+  {% if not hide_navbar %}
   <header class="sidebar">
     <h2 class="store-title">NAYLEX<br>STORE</h2>
 
@@ -40,8 +41,9 @@
       {% endif %}
     </a>
   </header>
+  {% endif %}
 
-  <main class="main container">
+  <main class="main {% if hide_navbar %}main-auth{% else %}container{% endif %}">
     {% block content %}{% endblock %}
   </main>
 

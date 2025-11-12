@@ -2,52 +2,139 @@
 {% block title %}Pedidos{% endblock %}
 
 {% block content %}
+<style>
+    /* 🔹 Contenedor general */
+    .pedido-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .pedido-card:hover {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        transform: scale(1.01);
+    }
+
+    /* 🔹 Badges de estado */
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.45em 0.7em;
+        border-radius: 8px;
+    }
+
+    .bg-pendiente {
+        background-color: #f8d775 !important;
+        color: #000 !important;
+    }
+
+    .bg-procesado {
+        background-color: #1bb5e0 !important;
+        color: #fff !important;
+    }
+
+    .bg-enviado {
+        background-color: #0066ff !important;
+        color: #fff !important;
+    }
+
+    .bg-entregado {
+        background-color: #28a745 !important;
+        color: #fff !important;
+    }
+
+    .bg-cancelado {
+        background-color: #6c757d !important;
+        color: #fff !important;
+    }
+
+    /* 🔹 Botones */
+    .btn {
+        border-radius: 8px;
+        padding: 5px 12px;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* 🔹 Título inferior */
+    footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #fff;
+        background-color: #001f7a;
+        padding: 10px 0;
+        border-radius: 0 0 10px 10px;
+        font-weight: 500;
+    }
+</style>
+
 <div class="container mt-4">
 
     {% if pedidos %}
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
+
                 {% for pedido in pedidos %}
-                <div class="mb-3 shadow-sm">
-                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="pedido-card">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                        
                         <div class="mb-2 mb-md-0">
-                            <span class="badge bg-primary me-2">🧮#{{ pedido.id_pedido }}</span>
-                            <b>📅Fecha:</b> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}
+                            <span class="badge bg-primary me-2">🧮 #{{ pedido.id_pedido }}</span>
+                            <b>📅 Fecha:</b> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}
                         </div>
+
                         <div class="mb-2 mb-md-0">
-                            <b>🚦Estado:</b>
-                            <span class="badge {% if pedido.estado_pedido.estado == 'Pendiente' %}bg-warning text-dark
-                                                 {% elif pedido.estado_pedido.estado == 'Procesado' %}bg-info
-                                                 {% elif pedido.estado_pedido.estado == 'Enviado' %}bg-primary
-                                                 {% elif pedido.estado_pedido.estado == 'Entregado' %}bg-success
-                                                 {% else %}bg-secondary{% endif %}">
+                            <b>🚦 Estado:</b>
+                            <span class="badge 
+                                {% if pedido.estado_pedido.estado == 'Pendiente' %} bg-pendiente
+                                {% elif pedido.estado_pedido.estado == 'Procesado' %} bg-procesado
+                                {% elif pedido.estado_pedido.estado == 'Enviado' %} bg-enviado
+                                {% elif pedido.estado_pedido.estado == 'Entregado' %} bg-entregado
+                                {% else %} bg-cancelado {% endif %}">
                                 {{ pedido.estado_pedido.estado }}
                             </span>
                         </div>
-                        
+
                         <div>
                             <a href="{{ url_for('compras_bp.detalle_pedido', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-primary">
                                 📊 Ver detalles
                             </a>
-                            
+
                             {% if 1 <= pedido.id_estado_pedido <= 4 %}
                             <a href="{{ url_for('compras_bp.factura', id_pedido=pedido.id_pedido) }}" class="btn btn-outline-danger" target="_blank">
                                 🧾 Factura
                             </a>
                             {% endif %}
-
-
                         </div>
 
                     </div>
                 </div>
                 {% endfor %}
+
             </div>
         </div>
+
     {% else %}
-        <div class="alert alert-info text-center">
-            <i class="bi bi-bag"></i> 😔No tienes pedidos realizados.
+        <div class="alert alert-info text-center mt-4">
+            <i class="bi bi-bag"></i> 😔 No tienes pedidos realizados.
         </div>
     {% endif %}
 </div>
+
+<footer>
+    Tienda Virtual del Sistema de Inventario TechSolutions
+</footer>
+
 {% endblock %}

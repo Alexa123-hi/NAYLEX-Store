@@ -5,21 +5,20 @@
 <style>
 /* ================== ESTILOS DE PEDIDOS ================== */
 .contenedor-pedidos {
-  width: 90%;
+  width: 95%;
   max-width: 950px;
-  margin: 30px auto 70px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin: 40px auto 80px auto;
 }
 
+/* Tarjeta del pedido */
 .pedido-card {
   background-color: #fff;
-  border: 2px solid var(--borde);
-  border-radius: 12px;
-  padding: 14px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: all 0.25s ease;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,95 +26,99 @@
 }
 
 .pedido-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   transform: scale(1.01);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
 }
 
-/* --------- Texto --------- */
+/* Columna 1: número y fecha */
 .pedido-info {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
-  margin-bottom: 5px;
+  color: #000;
+  margin: 3px 0;
 }
 
-.pedido-info b {
-  color: var(--azul-3);
+/* Columna 2: estado */
+.estado {
+  font-weight: bold;
+  font-size: 15px;
+  margin: 3px 0;
 }
 
-/* --------- Estado --------- */
 .badge-estado {
   padding: 5px 10px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
   color: #fff;
-  display: inline-block;
   margin-left: 5px;
 }
 
-.estado-pendiente { background-color: #f8d775; color: #000; }
-.estado-procesado { background-color: #1bb5e0; }
+.estado-pendiente { background-color: #FFD700; color: #000; }
+.estado-procesado { background-color: #00BFFF; }
 .estado-enviado   { background-color: #00008B; }
-.estado-entregado { background-color: #4CAF50; }
+.estado-entregado { background-color: #28a745; }
 .estado-cancelado { background-color: #6c757d; }
 
-/* --------- Botones --------- */
+/* Columna 3: botones */
+.botones-pedido {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .btn-nx {
-  display: inline-block;
-  padding: 6px 12px;
   border-radius: 8px;
-  font-size: 15px;
+  padding: 5px 12px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  margin-left: 6px;
-  transition: all 0.3s ease;
   border: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
 .btn-detalle {
-  border: 2px solid var(--azul-2);
-  color: var(--azul-2);
-  background-color: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+  background: #fff;
 }
 
 .btn-detalle:hover {
-  background-color: var(--azul-2);
+  background: var(--azul);
   color: #fff;
 }
 
 .btn-factura {
-  border: 2px solid #b30000;
   color: #b30000;
-  background-color: #fff;
+  border: 2px solid #b30000;
+  background: #fff;
 }
 
 .btn-factura:hover {
-  background-color: #b30000;
+  background: #b30000;
   color: #fff;
 }
 
-/* --------- Mensaje vacío --------- */
+/* Mensaje sin pedidos */
 .no-pedidos {
   text-align: center;
   background: #eaf4ff;
   color: #0d3a68;
   border-radius: 10px;
   padding: 15px;
-  margin: 20px auto;
+  margin: 30px auto;
   width: fit-content;
   font-weight: 500;
 }
 
-/* --------- Footer --------- */
+/* Footer */
 footer {
   text-align: center;
   color: #fff;
   background-color: var(--azul);
-  padding: 12px 0;
+  padding: 10px 0;
   font-weight: 500;
   border-top: 3px solid var(--dorado);
-  position: relative;
-  bottom: 0;
 }
 </style>
 {% endblock %}
@@ -125,13 +128,13 @@ footer {
   {% if pedidos %}
     {% for pedido in pedidos %}
     <div class="pedido-card">
-
+      
       <div class="pedido-info">
-        🧾 <b>#{{ pedido.id_pedido }}</b> &nbsp; | &nbsp;
+        🧾 <b>#{{ pedido.id_pedido }}</b> &nbsp;&nbsp;
         📅 <b>Fecha:</b> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}
       </div>
 
-      <div class="pedido-info">
+      <div class="estado">
         🚦 <b>Estado:</b>
         <span class="badge-estado 
           {% if pedido.estado_pedido.estado == 'Pendiente' %} estado-pendiente
@@ -154,6 +157,7 @@ footer {
         </a>
         {% endif %}
       </div>
+
     </div>
     {% endfor %}
   {% else %}

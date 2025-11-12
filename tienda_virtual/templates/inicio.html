@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Inicio</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/ICONO.png') }}">
-</head>
-<body>
-    
-    {% extends 'base.html' %}0
-
-    {% block title %}Inicio{% endblock %}
-
-    {% block content %}
-    <div class="bienvenida">
-        <h1>Bienvenido a la Tienda Virtual</h1>
-        <!-- <b>Naylex Store</b> -->
-        <p></p>
-        <p>Selecciona una opción del menú para comenzar.</p>
-        <!-- <p>Nos complace recibirte como cliente en esta tienda.</p> -->
-     </div>
-    {% endblock %}
-    
-    
-
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="bienvenida text-center mt-4">
+  <h1>Bienvenido a la Tienda Virtual</h1>
+  <p>Selecciona una opción del menú para comenzar.</p>
+</div>
+{% endblock %}

@@ -2,13 +2,11 @@
 {% block title %}Confirmación de Pedido{% endblock %}
 {% block content %}
 <div class="container mt-5 text-center">
-    <div class="alert alert-success" role="alert">
-        <h4 class="alert-heading">{{ titulo }}</h4>
-        <p class="mb-2" style="font-size: 1.15rem;">
-            {{ mensaje|safe }}
-        </p>
-        <p>Número de pedido: <strong>{{ id_pedido }}</strong></p>
-        <a href="{{ url_for('productos_bp.productos') }}" class="btn btn-outline-primary mt-3">Volver al catálogo</a>
-    </div>
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">{{ titulo }}</h4>
+    <p class="mb-2" style="font-size:1.15rem;">{{ mensaje|safe }}</p>
+    <p>Número de pedido: <strong>{{ id_pedido }}</strong></p>
+    <a href="{{ url_for('productos_bp.productos') }}" class="btn btn-outline-primary mt-3">Volver al catálogo</a>
+  </div>
 </div>
 {% endblock %}

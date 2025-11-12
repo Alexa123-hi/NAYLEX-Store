@@ -2,40 +2,31 @@
 {% block title %}Resumen de la Compra{% endblock %}
 {% block content %}
 <div class="container mt-5">
-    <h2>📜Resumen de tu compra</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>🔩Producto</th>
-                <th>🤵🏼Proveedor</th>
-                <th>#️⃣Cantidad</th>
-                <th>🪙Precio</th>
-                <th>💹Iva</th>
-                <th>💶Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in productos %}
-            <tr>
-                <td>{{ item.producto.nombre }}</td>
-                <td>{{ item.proveedor.id_proveedor }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>${{ '{:,.0f}'.format(item.precio) }}</td>
-                <td>{{ item.iva }}%</td>
-                <td>${{ '{:,.0f}'.format(item.subtotal) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div>
-        <span style="font-size:1.2rem; font-weight:bold;">
-            💶Subtotal: ${{ '{:,.0f}'.format(total_sin_iva) }} <br>
-            💸IVA: ${{ '{:,.0f}'.format(total_iva) }} <br>
-            <span style="color: #142879;">💰Total: ${{ '{:,.0f}'.format(total) }}</span>
-        </span>
-    </div>
-    <div class="mt-3">
-        <a href="{{ url_for('compras_bp.direccion_envio') }}" class="btn btn-success">🏠Agregar dirección</a>
-    </div>
+  <h2>📜Resumen de tu compra</h2>
+  <table class="table">
+    <thead>
+      <tr><th>🔩Producto</th><th>🤵🏼Proveedor</th><th>#️⃣Cantidad</th><th>🪙Precio</th><th>💹Iva</th><th>💶Subtotal</th></tr>
+    </thead>
+    <tbody>
+      {% for item in productos %}
+      <tr>
+        <td>{{ item.producto.nombre }}</td>
+        <td>{{ item.proveedor.id_proveedor }}</td>
+        <td>{{ item.cantidad }}</td>
+        <td>${{ '{:,.0f}'.format(item.precio) }}</td>
+        <td>{{ item.iva }}%</td>
+        <td>${{ '{:,.0f}'.format(item.subtotal) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="fw-bold" style="font-size:1.2rem;">
+    💶Subtotal: ${{ '{:,.0f}'.format(total_sin_iva) }} <br>
+    💸IVA: ${{ '{:,.0f}'.format(total_iva) }} <br>
+    <span style="color: var(--azul-3);">💰Total: ${{ '{:,.0f}'.format(total) }}</span>
+  </div>
+  <div class="mt-3">
+    <a href="{{ url_for('compras_bp.direccion_envio') }}" class="btn btn-success">🏠Agregar dirección</a>
+  </div>
 </div>
 {% endblock %}

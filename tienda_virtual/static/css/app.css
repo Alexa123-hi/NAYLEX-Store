@@ -1,0 +1,323 @@
+/* ================== VARIABLES Y GLOBALES ================== */
+:root {
+  --azul: #00008B;
+  --azul-2: #2045c7;
+  --azul-3: #142879;
+  --borde: #e5e5fa;
+}
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+/* ================== FLASH MESSAGES ================== */
+.flashes, .alert {
+  list-style: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.alert-success { background: #e8f7ee; color: #125c2b; }
+.alert-danger  { background: #fdecea; color: #8a1c1c; }
+.alert-info    { background: #eaf4ff; color: #0d3a68; }
+.alert-warning { background: #fff7e6; color: #7a4b00; }
+
+/* ================== HEADER / NAVBAR ================== */
+.sidebar {
+  display: flex;
+  align-items: center;
+  padding: 10px 30px;
+  background-color: var(--azul);
+  color: white;
+  height: 90px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.store-title {
+  margin-right: 60px;
+  font-size: 26px;
+  text-align: center;
+  font-weight: bold;
+}
+.nav-links a {
+  color: white;
+  margin-right: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 20px;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: #dddddd; }
+
+.sidebar-space { flex-grow: 1; }
+
+.welcome-badge {
+  background: #ceff39;
+  color: #131313;
+  padding: 8px 18px;
+  border: 4px solid black;
+  border-radius: 7px;
+  margin-left: 18px;
+  font-size: 22px;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.carrito-link {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 22px;
+  margin-left: 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.carrito-link:hover { color: #fff9c4; }
+
+.cart-count {
+  background: #FFD700;
+  color: #00008B;
+  margin-left: 7px;
+  padding: 2px 8px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+/* ================== FOOTER ================== */
+.sub-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--azul);
+  color: white;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  border-top: 3px solid #fff;
+}
+.main {
+  margin-top: 30px;
+  margin-bottom: 60px;
+}
+
+/* ================== LOGIN / REGISTRO ================== */
+.page-gradient {
+  font-family: 'Times New Roman', Times, serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 70px;
+  height: 75vh;
+  background: linear-gradient(90deg, white, #4a91fe);
+}
+.sidebar-login {
+  background: linear-gradient(145deg, #0000CD, #00008B);
+  color: #fff;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-radius: 15px;
+  border: 10px double #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+  padding: 25px 20px 20px;
+}
+.header-title { margin: 0 0 6px 0; font-size: 35px; line-height: 1.2; }
+.header-sub { margin: 0 0 15px 0; font-size: clamp(12px, 1.5vw, 20px); font-weight: 400; }
+
+.form-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.input-group-nx {
+  background: #4a91fe;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 3px solid #000;
+  width: 90%;
+  gap: 8px;
+}
+.input-group-nx span {
+  font-size: 20px;
+  color: var(--azul);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.input-group-nx input {
+  border: 2px solid #000;
+  outline: none;
+  width: 100%;
+  font-size: 18px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-family: 'Times New Roman', Times, serif;
+  background: #fff;
+  color: #000;
+}
+.btn-nx {
+  background: #4CAF50;
+  border: 5px double #000;
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 80%;
+  transition: background .3s ease;
+  font-family: 'Times New Roman', Times, serif;
+  margin-top: 16px;
+}
+.btn-nx:hover { background: #45a049; }
+.link-nx { color: #FFD700; font-size: 18px; margin-top: 10px; text-decoration: none; }
+
+/* ================== PRODUCTOS ================== */
+.product-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.08);
+  padding: 26px 26px 18px 26px;
+  margin-bottom: 36px;
+  transition: transform .18s, box-shadow .18s;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid var(--borde);
+}
+.product-card:hover {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow: 0 8px 32px rgba(0,0,30,0.16), 0 4px 12px rgba(0,0,0,0.13);
+  border-color: #2a44a8;
+}
+.product-title { font-size: 1.32rem; color: var(--azul); margin-bottom: 10px; font-weight: bold; letter-spacing: .5px; }
+.product-code { color: #4a4a4a; font-size: .99rem; margin-bottom: 7px; }
+.product-description { color: #222; font-size: 1.06rem; margin-bottom: 15px; line-height: 1.4; }
+.product-state { font-size: 1.02rem; margin-bottom: 7px; color: #173b7a; font-weight: 500; }
+.search-bar { display: flex; align-items: center; justify-content: left; gap: 10px; margin-top: 20px; }
+.search-input {
+  width: 445px;
+  padding: 10px 16px;
+  font-size: 1.1rem;
+  border: 2px solid var(--azul);
+  border-radius: 8px;
+  outline: none;
+  transition: box-shadow .3s;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+.search-input:focus { border-color: #2468db; box-shadow: 0 2px 12px rgba(36,104,219,.15); }
+.page-title { font-size: 2rem; color: var(--azul-3); }
+
+/* ================== CARRITO ================== */
+.total-bordered {
+  border: 3px solid blue;
+  border-radius: 8px;
+  padding: 9px 22px;
+  font-size: 1.4rem;
+  color: black;
+  background: white;
+  margin-right: 18px;
+  font-family: 'Times New Roman', Times, serif;
+  display: inline-block;
+}
+.table-bordered-nx {
+  border-radius: 10px;
+  box-shadow: 0 6px 22px rgba(0,0,80,0.08);
+  border: 2px solid blue;
+}
+
+/* ================== MÉTODO DE PAGO ================== */
+.metodo-pago-card {
+  margin-top: -150px;
+  margin-bottom: -10px;
+  background: #fff;
+  border: 3px solid var(--azul-2);
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(32,69,199,.10);
+  padding: 20px 30px 24px 30px;
+  max-width: 480px;
+  width: 100%;
+}
+.metodo-pago-title {
+  color: var(--azul-2);
+  text-align: center;
+  font-weight: 700;
+  font-size: 2rem;
+  margin: -5px 0 5px 0;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* ================== DIRECCIÓN DE ENVÍO ================== */
+.shipping-form-card {
+  margin-top: -170px;
+  background: #fff;
+  border: 3px solid var(--azul-2);
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(32,69,199,.10);
+  padding: 32px 28px 24px 28px;
+  max-width: 520px;
+  width: 100%;
+}
+.shipping-title {
+  margin-top: -20px;
+  color: var(--azul-2);
+  text-align: center;
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 0;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* ================== UTILIDADES ================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+.hidden { display: none !important; }
+
+/* ================== RESPONSIVE NAVBAR ================== */
+@media (max-width: 900px) {
+  .sidebar {
+    flex-direction: column;
+    height: auto;
+    padding: 12px;
+    text-align: center;
+  }
+  .store-title {
+    margin: 0 0 10px 0;
+  }
+  .nav-links a {
+    display: inline-block;
+    margin: 8px;
+    font-size: 18px;
+  }
+  .welcome-badge {
+    font-size: 18px;
+    margin: 8px 0;
+  }
+  .carrito-link {
+    font-size: 18px;
+    margin-top: 8px;
+  }
+  .sub-bar {
+    font-size: 13px;
+  }
+}
+/* ================== FIN CSS ================== */

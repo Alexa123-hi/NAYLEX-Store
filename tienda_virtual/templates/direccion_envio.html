@@ -1,101 +1,52 @@
 {% extends 'base.html' %}
 {% block title %}Dirección de envío{% endblock %}
 {% block content %}
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-<style>
-    .shipping-form-card {
-        margin-top: -170px;
-        background: #fff;
-        border: 3px solid #2045c7;
-        border-radius: 14px;
-        box-shadow: 0 4px 18px rgba(32, 69, 199, 0.10);
-        padding: 32px 28px 24px 28px;
-        max-width: 520px;
-        width: 100%;
-    }
-    .shipping-title {
-        margin-top: -20px;
-        color: #2045c7;
-        text-align: center;
-        font-weight: bold;
-        font-size: 2rem;
-        margin-bottom: 0px;
-        font-family: 'Times New Roman', Times, serif;
-    }
-    .input-group-text {
-        min-width:25px;
-        justify-content: center;
-        background: #eef2ff;
-        font-size: 1.3rem;
-    }
-    .form-control {
-        font-size: 1.07rem;
-        min-height: 25px;
-    }
-</style>
-
 <div class="d-flex justify-content-center align-items-center min-vh-100">
-    <div class="shipping-form-card">
-        {% if error_msg %}
-            <div class="alert alert-danger text-center mb-3">
-                {{ error_msg }}
-            </div>
-        {% endif %}
-
-        <div class="shipping-title">🚛Dirección de Envío</div>
-        <form method="POST" action="{{ url_for('compras_bp.direccion_envio') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <div class="mb-3">
-                <label for="direccion" class="form-label">🏠Dirección:</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-house-door"></i></span>
-                    <input type="text" class="form-control" id="direccion" name="direccion"
-                        placeholder="Ej: Calle 12 #34-56" required
-                        value="{{ direccion or '' }}">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="ciudad" class="form-label">🌆Ciudad:</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-building"></i></span>
-                    <input type="text" class="form-control" id="ciudad" name="ciudad"
-                        placeholder="Ej: Bogotá" required
-                        value="{{ ciudad or '' }}">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="departamento" class="form-label">🏢Departamento:</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                    <input type="text" class="form-control" id="departamento" name="departamento"
-                        placeholder="Ej: Antioquia" required
-                        value="{{ departamento or '' }}">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="codigo_postal" class="form-label">📩Código Postal:</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-123"></i></span>
-                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal"
-                        placeholder="Ej: 110111" required
-                        value="{{ codigo_postal or '' }}">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="barrio" class="form-label">🏘️Barrio:</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-tree"></i></span>
-                    <input type="text" class="form-control" id="barrio" name="barrio"
-                        placeholder="Ej: La Floresta" required
-                        value="{{ barrio or '' }}">
-                </div>
-            </div>
-           <div class="d-flex justify-content-center mt-3">
-                <button type="submit" class="btn btn-success w-75">💾Guardar y continuar</button>
-            </div>
-        </form>
-    </div>
+  <div class="shipping-form-card">
+    {% if error_msg %}<div class="alert alert-danger text-center mb-3">{{ error_msg }}</div>{% endif %}
+    <div class="shipping-title">🚛Dirección de Envío</div>
+    <form method="POST" action="{{ url_for('compras_bp.direccion_envio') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label for="direccion" class="form-label">🏠Dirección:</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-house-door"></i></span>
+          <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Ej: Calle 12 #34-56" required value="{{ direccion or '' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="ciudad" class="form-label">🌆Ciudad:</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-building"></i></span>
+          <input type="text" class="form-control" id="ciudad" name="ciudad" placeholder="Ej: Bogotá" required value="{{ ciudad or '' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="departamento" class="form-label">🏢Departamento:</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+          <input type="text" class="form-control" id="departamento" name="departamento" placeholder="Ej: Antioquia" required value="{{ departamento or '' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="codigo_postal" class="form-label">📩Código Postal:</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-123"></i></span>
+          <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" placeholder="Ej: 110111" required value="{{ codigo_postal or '' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="barrio" class="form-label">🏘️Barrio:</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-tree"></i></span>
+          <input type="text" class="form-control" id="barrio" name="barrio" placeholder="Ej: La Floresta" required value="{{ barrio or '' }}">
+        </div>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <button type="submit" class="btn btn-success w-75">💾Guardar y continuar</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

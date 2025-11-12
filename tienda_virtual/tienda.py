@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-# Aplicación Flask principal de NAYLEX Store (con diagnóstico CSRF integrado)
+# Aplicación Flask principal de NAYLEX Store (endurecida: CSRF, CSP con nonce, cookies seguras, HSTS)
+
+import os
+import re
+import secrets
+from datetime import datetime, timedelta
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -7,7 +12,8 @@ from flask import (
 )
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
-from datetime import datetime, timedelta
+from flask_talisman import Talisman   # ← cabeceras seguras + CSP/nonce
+
 from tienda_virtual import db
 from tienda_virtual.Carrito_compras import carrito_compras_bp
 from tienda_virtual.productos import productos_bp
@@ -18,23 +24,18 @@ from tienda_virtual.login_interpreter import (
     Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido
 )
 
-import os
-import re
-import secrets
-
-
 # --------------------------------------------------------------------
 # CONFIGURACIÓN BÁSICA DE LA APP
 # --------------------------------------------------------------------
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Secreto de la app
+# Secreto de la app (usa env en producción)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "cambia_esto_en_produccion")
 
-# ¿Estamos en producción?
-IS_PROD = os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENV") == "production"
+# ¿Estamos en producción real?
+IS_PROD = os.environ.get("RENDER", "0") == "1" or os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENV") == "production"
 
-# Base de datos (usa env; si no, usa tu Postgres de Render con SSL)
+# Base de datos
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     os.environ.get("DATABASE_URL")
     or "postgresql+psycopg2://naylex_bd_iqap_user:19UWCPUfhiZHHyyLtLkxHEqVlhtldY1D"
@@ -43,26 +44,14 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # --------------------------------------------------------------------
-# CONFIGURACIÓN DE COOKIES / SESIÓN (compatible local y producción)
+# COOKIES / SESIÓN (flags de seguridad)
 # --------------------------------------------------------------------
-# Detecta automáticamente si estás en Render o entorno local
-IS_PROD = os.environ.get("RENDER", "0") == "1" or os.environ.get("FLASK_ENV") == "production"
-
 app.config.update(
-    # 🔐 Cookies seguras solo en producción real (HTTPS)
-    SESSION_COOKIE_SECURE=IS_PROD,  
-
-    # ✅ En local se permite lectura normal (necesario para depurar CSRF)
-    SESSION_COOKIE_HTTPONLY=True if IS_PROD else False,
-
-    # ✅ None permite cookies en LAN (192.168.x.x), Lax es más seguro en prod
-    SESSION_COOKIE_SAMESITE="Lax" if IS_PROD else None,
-
-    # ⏱ Duración de la sesión (igual en ambos entornos)
+    SESSION_COOKIE_SECURE=True if IS_PROD else False,  # Secure solo con HTTPS real
+    SESSION_COOKIE_HTTPONLY=True,                      # ← corrige alerta HttpOnly
+    SESSION_COOKIE_SAMESITE="Lax",                     # 'Strict' si tu flujo lo permite
     PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
 )
-
-
 
 # Inicializar DB y blueprints
 db.init_app(app)
@@ -71,9 +60,8 @@ app.register_blueprint(carrito_compras_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
 
-
 # --------------------------------------------------------------------
-# CONFIGURACIÓN DE CORREO
+# CORREO
 # --------------------------------------------------------------------
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
 app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
@@ -86,51 +74,55 @@ app.config["MAIL_DEFAULT_SENDER"] = (
 )
 mail = Mail(app)
 
+# --------------------------------------------------------------------
+# CONTENT SECURITY POLICY (SIN 'unsafe-inline') + HSTS y cabeceras
+# Usamos flask-talisman para gestionar CSP y nonce.
+# --------------------------------------------------------------------
+CSP = {
+    "default-src": ["'self'"],
+    "img-src": ["'self'", "data:"],
+    "script-src": ["'self'"],      # Talisman añadirá el nonce automáticamente
+    "style-src": ["'self'"],       # mueve estilos a /static/css
+    "font-src": ["'self'", "data:"],
+    "connect-src": ["'self'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
+    "frame-ancestors": ["'none'"],
+}
+
+talisman = Talisman(
+    app,
+    content_security_policy=CSP,
+    content_security_policy_nonce_in=["script-src"],  # habilita {{ csp_nonce() }} en templates
+    force_https=True if IS_PROD else False,           # en prod forzamos HTTPS
+    strict_transport_security=True if IS_PROD else False,
+    strict_transport_security_max_age=31536000,
+    frame_options="DENY",
+    referrer_policy="strict-origin-when-cross-origin",
+    x_content_type_options=True
+)
+
+# Exponer csp_nonce() también como variable por si lo quieres inyectar manualmente
+@app.context_processor
+def inject_csp_nonce():
+    from flask_talisman import Talisman as _T
+    return dict(csp_nonce=_T.get_nonce)
 
 # --------------------------------------------------------------------
-# CABECERAS DE SEGURIDAD (CSP, XFO, nosniff, HSTS condicional)
+# CONTROL DE CACHÉ (no-store para vistas autenticadas)
 # --------------------------------------------------------------------
 @app.after_request
-def set_security_headers(resp):
-    # Alineado con: Bootstrap 5 (jsdelivr), Bootstrap Icons (jsdelivr)
-    csp = (
-        "default-src 'self'; "
-        "img-src 'self' data:; "
-        "script-src 'self' https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "font-src 'self' https://cdn.jsdelivr.net data:; "
-        "base-uri 'self'; "
-        "form-action 'self'; "
-        "frame-ancestors 'none';"
-    )
-    resp.headers.setdefault("Content-Security-Policy", csp)
-    resp.headers.setdefault("X-Frame-Options", "DENY")
-    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
-    resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-
-    # Evitar caché por defecto en respuestas (especialmente autenticadas)
+def no_cache_for_authenticated(resp):
     if "usuario_id" in session:
-        resp.headers.setdefault("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
+        resp.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         resp.headers.setdefault("Pragma", "no-cache")
         resp.headers.setdefault("Expires", "0")
-
-    # HSTS solo si estás en prod y la request es HTTPS real
-    if IS_PROD and request.is_secure:
-        resp.headers.setdefault(
-            "Strict-Transport-Security",
-            "max-age=31536000; includeSubDomains; preload"
-        )
     return resp
 
-
 # --------------------------------------------------------------------
-# ✅ NUEVO CSRF LIGERO – token en sesión + validación automática
+# CSRF LIGERO – token por sesión + validación en métodos mutadores
 # --------------------------------------------------------------------
-import secrets
-from flask import session, request, abort
-
 def _get_csrf_token():
-    """Devuelve el token CSRF actual o genera uno nuevo si no existe."""
     token = session.get("_csrf_token")
     if not token:
         token = secrets.token_urlsafe(32)
@@ -139,43 +131,27 @@ def _get_csrf_token():
 
 @app.before_request
 def _ensure_csrf_token():
-    """Garantiza que toda sesión tenga un token antes de cualquier request."""
     if "_csrf_token" not in session:
         session["_csrf_token"] = secrets.token_urlsafe(32)
 
 def _validate_csrf():
-    """Valida el token CSRF en cada petición POST, PUT, PATCH o DELETE."""
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
-        # Obtener tokens del formulario y de la sesión
         form_token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
         sess_token = session.get("_csrf_token")
-
-        # 🔍 Diagnóstico (solo visible en consola de Flask)
-        print("== CSRF DEBUG ==")
-        print("SESSION TOKEN:", sess_token)
-        print("FORM TOKEN:", form_token)
-        print("MÉTODO:", request.method)
-        print("RUTA:", request.path)
-        print("-------------------------------")
-
-        # Validación
         if not form_token or not sess_token or form_token != sess_token:
             abort(400, description="CSRF token inválido o ausente")
 
-
 @app.before_request
 def _csrf_protect_hook():
-    """Hook de protección CSRF (valida el token antes de procesar POSTs)."""
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         _validate_csrf()
 
-# Exponer csrf_token() a Jinja para incluir en los formularios
+# Exponer csrf_token() a Jinja
 app.jinja_env.globals["csrf_token"] = _get_csrf_token
 
 # --------------------------------------------------------------------
 # RUTAS
 # --------------------------------------------------------------------
-# Inicio de sesión
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
     if request.method == "POST":
@@ -187,7 +163,6 @@ def inicioSesion():
             return redirect(url_for("inicioSesion"))
 
         usuario = Usuario.query.filter_by(username=username).first()
-
         contexto = Contexto(usuario, password)
         reglas_login = LoginValido(
             UsuarioExiste(),
@@ -212,6 +187,8 @@ def inicioSesion():
                 )
             return redirect(url_for("inicioSesion"))
 
+        # Sesión
+        session.clear()              # rotamos ID para seguridad
         session.permanent = True
         session["usuario_id"] = usuario.id_usuario
         session["usuario_nombre"] = usuario.username
@@ -225,27 +202,21 @@ def inicioSesion():
 
     return render_template("inicioSesion.html")
 
-
 @app.route("/inicio")
 def inicio():
     if "usuario_id" in session:
         response = make_response(render_template("inicio.html"))
-        # Cabeceras se añaden en after_request (por si se necesitan extra aquí)
         return response
-    else:
-        flash("Debes iniciar sesión primero.")
-        return redirect(url_for("inicioSesion"))
-
+    flash("Debes iniciar sesión primero.")
+    return redirect(url_for("inicioSesion"))
 
 def base():
     return render_template("base.html")
-
 
 # Recuperación de contraseña (formulario)
 @app.route("/recuperar_contrasena")
 def recuperar_contrasena():
     return render_template("recuperar_contrasena.html")
-
 
 # Token de recuperación
 def generar_token(correo):
@@ -258,7 +229,6 @@ def verificar_token(token, max_age=3600):
         return s.loads(token, salt="recuperacion-clave", max_age=max_age)
     except Exception:
         return None
-
 
 # Envío de instrucciones de recuperación
 @app.route("/enviar_instrucciones", methods=["POST"])
@@ -314,7 +284,6 @@ def enviar_instrucciones():
     flash("No se encontró ningún registro con los datos ingresados.")
     return redirect(url_for("recuperar_contrasena"))
 
-
 # Restaurar contraseña con token
 @app.route("/restaurar_contrasena/<token>", methods=["GET", "POST"])
 def restaurar_contrasena(token):
@@ -333,7 +302,7 @@ def restaurar_contrasena(token):
         usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
 
         if usuario:
-            # En producción: guardar hash (werkzeug.security.generate_password_hash)
+            # TODO: en producción guardar hash (generate_password_hash)
             usuario.password = nueva_password
             db.session.commit()
             flash("Tu contraseña fue actualizada exitosamente.")
@@ -343,15 +312,13 @@ def restaurar_contrasena(token):
 
     return render_template("restaurar_contrasena.html", correo=correo)
 
-
+# Registro de usuario
 @app.route("/registro_usuario", methods=["GET", "POST"])
 def registro_usuario():
-    # 🔹 fuerza creación del token al abrir la página
     if request.method == "GET":
-        _get_csrf_token()  
+        _get_csrf_token()  # fuerza creación del token
 
     if request.method == "POST":
-        # (no es necesario volver a llamar aquí)
         cc = (request.form.get("cc") or "").strip()
         nombre = (request.form.get("nombre") or "").strip()
         apellido = (request.form.get("apellido") or "").strip()
@@ -362,7 +329,7 @@ def registro_usuario():
         password = (request.form.get("password") or "").strip()
 
         try:
-            # --- validaciones y creación de usuario ---
+            # Validaciones
             existe_cc = Persona.query.filter_by(cc=cc).first()
             existe_correo = Persona.query.filter_by(correo=correo).first()
             existe_telefono = Persona.query.filter_by(telefono=telefono).first()
@@ -399,7 +366,7 @@ def registro_usuario():
             nuevo_usuario = Usuario(
                 id_persona=nueva_persona.id_persona,
                 username=username,
-                password=password,
+                password=password,  # TODO: hash
                 id_tipo=2,
                 id_estado_usuario=1,
                 fecha_creacion=datetime.now()
@@ -426,8 +393,6 @@ def registro_usuario():
 
     return render_template("registro_usuario.html", datos_anteriores={})
 
-
-
 # Cerrar sesión
 @app.route("/cerrar_Sesion")
 def cerrar_Sesion():
@@ -435,10 +400,9 @@ def cerrar_Sesion():
     flash("Sesión cerrada correctamente.")
     return redirect(url_for("inicioSesion"))
 
-
 # --------------------------------------------------------------------
 # EJECUCIÓN
 # --------------------------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=not IS_PROD)

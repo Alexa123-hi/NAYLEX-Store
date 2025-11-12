@@ -6,6 +6,9 @@ from tienda_virtual.models import db, Persona, Usuario
 
 perfil_bp = Blueprint('perfil_bp', __name__)
 
+# -------------------------------------------------------------------
+# PERFIL: Ver y actualizar información personal
+# -------------------------------------------------------------------
 @perfil_bp.route('/perfil', methods=['GET', 'POST'])
 def perfil():
     id_usuario = session.get('usuario_id')
@@ -24,8 +27,8 @@ def perfil():
         flash("No se encontró información personal asociada a este usuario.", "danger")
         return redirect(url_for('inicio'))
 
+    # Actualización de datos
     if request.method == 'POST':
-        # Capturar campos actualizados
         cc = request.form.get('cc', '').strip()
         nombre = request.form.get('nombre', '').strip()
         apellido = request.form.get('apellido', '').strip()
@@ -35,13 +38,13 @@ def perfil():
 
         # Validaciones de unicidad
         if cc and Persona.query.filter(Persona.cc == cc, Persona.id_persona != persona.id_persona).first():
-            flash('La cédula ingresada ya está registrada para otro usuario.', 'warning')
+            flash('⚠️ La cédula ingresada ya está registrada para otro usuario.', 'warning')
         elif correo and Persona.query.filter(Persona.correo == correo, Persona.id_persona != persona.id_persona).first():
-            flash('El correo electrónico ya está registrado para otro usuario.', 'warning')
+            flash('⚠️ El correo electrónico ya está registrado para otro usuario.', 'warning')
         elif telefono and Persona.query.filter(Persona.telefono == telefono, Persona.id_persona != persona.id_persona).first():
-            flash('El teléfono ya está registrado para otro usuario.', 'warning')
+            flash('⚠️ El teléfono ya está registrado para otro usuario.', 'warning')
         else:
-            # Solo actualizar si se digitó un valor nuevo
+            # Actualizar solo los campos modificados
             if cc: persona.cc = cc
             if nombre: persona.nombre = nombre
             if apellido: persona.apellido = apellido
@@ -55,7 +58,7 @@ def perfil():
             except Exception as e:
                 db.session.rollback()
                 print("❌ Error al actualizar perfil:", e)
-                flash("Ocurrió un error al actualizar los datos.", "danger")
+                flash("❌ Ocurrió un error al actualizar los datos.", "danger")
 
         return redirect(url_for('perfil_bp.perfil'))
 
@@ -74,19 +77,20 @@ def inactivar_cuenta():
 
     usuario = Usuario.query.get(id_usuario)
     if usuario:
-        usuario.id_estado_usuario = 2  # 2 = inactivo
         try:
+            usuario.id_estado_usuario = 2  # 2 = Inactivo
             db.session.commit()
-            session.clear()  # Cierra la sesión automáticamente
+            session.clear()
             flash("⚠️ Tu cuenta ha sido inactivada. ¡Esperamos verte pronto!", "info")
         except Exception as e:
             db.session.rollback()
             print("❌ Error al inactivar cuenta:", e)
-            flash("No se pudo inactivar la cuenta.", "danger")
+            flash("❌ No se pudo inactivar la cuenta.", "danger")
     else:
-        flash("Usuario no encontrado.", "danger")
+        flash("El usuario no fue encontrado.", "danger")
 
     return redirect(url_for('inicioSesion'))
+
 
 # -------------------------------------------------------------------
 # REACTIVAR CUENTA
@@ -100,32 +104,36 @@ def reactivar_cuenta():
         telefono = request.form.get('telefono', '').strip()
 
         usuario = None
+        persona = None
 
-        # Buscar por cualquiera de los datos
+        # Buscar por cualquier dato ingresado
         if username:
             usuario = Usuario.query.filter_by(username=username).first()
         elif cc:
             persona = Persona.query.filter_by(cc=cc).first()
-            if persona:
-                usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
-        elif telefono:
-            persona = Persona.query.filter_by(telefono=telefono).first()
-            if persona:
-                usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
         elif correo:
             persona = Persona.query.filter_by(correo=correo).first()
-            if persona:
-                usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
+        elif telefono:
+            persona = Persona.query.filter_by(telefono=telefono).first()
 
+        if persona and not usuario:
+            usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
+
+        # Reactivar si existe
         if usuario:
             if usuario.id_estado_usuario == 2:
-                usuario.id_estado_usuario = 1
-                db.session.commit()
-                flash("✅ Cuenta reactivada con éxito. Ya puedes iniciar sesión.", "success")
-                return redirect(url_for('inicioSesion'))
+                try:
+                    usuario.id_estado_usuario = 1
+                    db.session.commit()
+                    flash("✅ Cuenta reactivada con éxito. Ya puedes iniciar sesión.", "success")
+                    return redirect(url_for('inicioSesion'))
+                except Exception as e:
+                    db.session.rollback()
+                    print("❌ Error al reactivar cuenta:", e)
+                    flash("❌ No se pudo reactivar la cuenta.", "danger")
             else:
-                flash("Tu cuenta ya está activa.", "info")
+                flash("ℹ️ Tu cuenta ya está activa.", "info")
         else:
-            flash("No se encontró ninguna cuenta con esos datos.", "danger")
+            flash("⚠️ No se encontró ninguna cuenta con esos datos.", "danger")
 
     return render_template('reactivar_cuenta.html', hide_navbar=True)

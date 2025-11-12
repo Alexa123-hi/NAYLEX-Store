@@ -8,7 +8,7 @@ from flask import (
 from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
 from datetime import timedelta
-import os, re, secrets, resend
+import os, secrets
 
 # ---------------------------- MÓDULOS PROPIOS ----------------------------
 from tienda_virtual import db
@@ -20,44 +20,40 @@ from tienda_virtual.models import Persona, Usuario, Cliente
 from tienda_virtual.login_interpreter import (
     Contexto, UsuarioExiste, ContraseñaCorrecta, UsuarioActivo, EsCliente, LoginValido
 )
+from tienda_virtual.email_sender import enviar_correo  # 📩 integrado con Brevo
 
 # -------------------------------------------------------------------------
-# CONFIGURACIÓN DE LA APP
+# CONFIGURACIÓN GENERAL
 # -------------------------------------------------------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clave_segura_dev")
 
-IS_PROD = (
-    os.environ.get("RENDER", "0") == "1" or
-    os.environ.get("FLASK_ENV") == "production" or
-    os.environ.get("ENV") == "production"
-)
+IS_PROD = os.environ.get("RENDER", "0") == "1"
 
-# ---------------------------- BASE DE DATOS ----------------------------
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    os.environ.get("DATABASE_URL")
-    or "postgresql+psycopg2://naylex_bd_iqap_user:19UWCPUfhiZHHyyLtLkxHEqVlhtldY1D"
-       "@dpg-d46l3t2li9vc73at09c0-a.oregon-postgres.render.com/naylex_bd_iqap?sslmode=require"
-)
+# -------------------------------------------------------------------------
+# BASE DE DATOS
+# -------------------------------------------------------------------------
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ---------------------------- SESIÓN Y COOKIES ----------------------------
+# -------------------------------------------------------------------------
+# SESIÓN Y COOKIES
+# -------------------------------------------------------------------------
 app.config.update(
-    SESSION_COOKIE_SECURE=True if IS_PROD else False,
+    SESSION_COOKIE_SECURE=IS_PROD,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
 )
 
-# ---------------------------- BLUEPRINTS ----------------------------
+# -------------------------------------------------------------------------
+# BLUEPRINTS
+# -------------------------------------------------------------------------
 db.init_app(app)
 app.register_blueprint(productos_bp)
 app.register_blueprint(carrito_compras_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(perfil_bp)
-
-# ---------------------------- CONFIGURAR RESEND ----------------------------
-resend.api_key = os.environ.get("RESEND_API_KEY", "coloca_tu_token_aqui")
 
 # -------------------------------------------------------------------------
 # CABECERAS DE SEGURIDAD (Talisman)
@@ -74,27 +70,18 @@ CSP = {
     "frame-ancestors": ["'none'"],
 }
 
-talisman = Talisman(
+Talisman(
     app,
     content_security_policy=CSP,
-    content_security_policy_nonce_in=["script-src"],
-    force_https=True if IS_PROD else False,
-    strict_transport_security=True if IS_PROD else False,
+    force_https=IS_PROD,
+    strict_transport_security=IS_PROD,
     strict_transport_security_max_age=31536000,
     frame_options="DENY",
     referrer_policy="strict-origin-when-cross-origin",
-    x_content_type_options=True,
 )
-
-@app.context_processor
-def security_ctx():
-    def _csp_nonce():
-        return getattr(g, "csp_nonce", "")
-    return {"csp_nonce": _csp_nonce}
 
 @app.after_request
 def add_security_headers(resp):
-    resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
     resp.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
     resp.headers.setdefault("Pragma", "no-cache")
     resp.headers.setdefault("Expires", "0")
@@ -135,8 +122,8 @@ app.jinja_env.globals["csrf_token"] = _get_csrf_token
 @app.route("/", methods=["GET", "POST"])
 def inicioSesion():
     if request.method == "POST":
-        username = (request.form.get("nombreUsuario") or "").strip()
-        password = (request.form.get("contrasena") or "").strip()
+        username = request.form.get("nombreUsuario", "").strip()
+        password = request.form.get("contrasena", "").strip()
 
         if not username or not password:
             flash("Usuario y contraseña son obligatorios.", "danger")
@@ -147,25 +134,15 @@ def inicioSesion():
         reglas_login = LoginValido(UsuarioExiste(), ContraseñaCorrecta(), UsuarioActivo(), EsCliente())
 
         if not reglas_login.interpretar(contexto):
-            if not UsuarioExiste().interpretar(contexto):
-                flash("El usuario no existe.", "danger")
-            elif not ContraseñaCorrecta().interpretar(contexto):
-                flash("Contraseña incorrecta.", "danger")
-            elif not UsuarioActivo().interpretar(contexto):
-                flash("Tu cuenta está inactiva. Debes reactivarla.", "warning")
-            elif not EsCliente().interpretar(contexto):
-                flash("Acceso restringido.", "info")
+            flash("Credenciales incorrectas o usuario inactivo.", "danger")
             return render_template("inicioSesion.html", hide_navbar=True)
 
         session.clear()
-        session.permanent = True
         session["usuario_id"] = usuario.id_usuario
         session["usuario_nombre"] = usuario.username
-
         cliente = Cliente.query.filter_by(id_usuario=usuario.id_usuario).first()
         if cliente:
             session["id_cliente"] = cliente.id_cliente
-
         flash(f"¡Bienvenido {usuario.username}!", "success")
         return redirect(url_for("inicio"))
 
@@ -179,7 +156,7 @@ def inicio():
     return redirect(url_for("inicioSesion"))
 
 # -------------------------------------------------------------------------
-# RECUPERAR Y RESTAURAR CONTRASEÑA
+# RECUPERAR Y RESTAURAR CONTRASEÑA (con Brevo)
 # -------------------------------------------------------------------------
 @app.route("/recuperar_contrasena", methods=["GET", "POST"])
 def recuperar_contrasena():
@@ -191,6 +168,7 @@ def recuperar_contrasena():
         persona = None
         correo_destino = None
 
+        # Buscar usuario por correo, username o teléfono
         if correo_usuario:
             persona = Persona.query.filter_by(correo=correo_usuario).first()
             if persona:
@@ -211,19 +189,24 @@ def recuperar_contrasena():
             token = s.dumps(correo_destino, salt="recuperacion-clave")
             enlace = url_for("restaurar_contrasena", token=token, _external=True)
 
-            resend.Emails.send({
-                "from": "NAYLEX Store <no-reply@naylexstore.com>",
-                "to": [correo_destino],
-                "subject": "🔑 Recuperación de contraseña - NAYLEX Store",
-                "html": f"""
-                <h2 style='color:#0044cc'>NAYLEX Store</h2>
-                <p>Hola {persona.nombre},</p>
-                <p>Haz clic para restablecer tu contraseña:</p>
-                <a href="{enlace}" style='background:#0066ff;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;'>Restablecer contraseña</a>
-                <p>El enlace expirará en 1 hora.</p>
-                """,
-            })
-            flash(f"✅ Se enviaron instrucciones a {correo_destino}.", "success")
+            html = f"""
+            <h2 style='color:#0044cc'>NAYLEX Store</h2>
+            <p>Hola {persona.nombre},</p>
+            <p>Haz clic para restablecer tu contraseña:</p>
+            <a href="{enlace}" style='background:#0066ff;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;'>Restablecer contraseña</a>
+            <p>El enlace expirará en 1 hora.</p>
+            """
+
+            ok = enviar_correo(
+                destinatario=correo_destino,
+                asunto="🔑 Recuperación de contraseña - NAYLEX Store",
+                html=html,
+                texto=f"Restablece tu contraseña aquí: {enlace}"
+            )
+            if ok:
+                flash(f"✅ Se enviaron instrucciones a {correo_destino}.", "success")
+            else:
+                flash("⚠️ No se pudo enviar el correo en este momento.", "warning")
             return redirect(url_for("inicioSesion"))
         else:
             flash("⚠️ No se encontró ningún registro con esos datos.", "danger")
@@ -250,25 +233,13 @@ def restaurar_contrasena(token):
         usuario = Usuario.query.filter_by(id_persona=persona.id_persona).first()
 
         if usuario:
-            usuario.password = nueva_password
+            usuario.password = nueva_password  # ⚠️ en prod: usa hash
             db.session.commit()
             flash("Tu contraseña fue actualizada exitosamente.", "success")
             return redirect(url_for("inicioSesion"))
         flash("No se pudo actualizar la contraseña.", "danger")
 
     return render_template("restaurar_contrasena.html", correo=correo, hide_navbar=True)
-
-# -------------------------------------------------------------------------
-# REGISTRO
-# -------------------------------------------------------------------------
-@app.route("/registro_usuario", methods=["GET", "POST"])
-def registro_usuario():
-    if request.method == "GET":
-        _get_csrf_token()
-        return render_template("registro_usuario.html", hide_navbar=True)
-    # (resto igual que antes)
-    # ...
-    return redirect(url_for("inicioSesion"))
 
 # -------------------------------------------------------------------------
 @app.route("/cerrar_Sesion")
